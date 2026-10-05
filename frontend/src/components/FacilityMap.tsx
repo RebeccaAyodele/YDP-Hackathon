@@ -1,20 +1,7 @@
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, useMap } from 'react-leaflet';
+import React, { useEffect, useRef } from 'react';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Facility, NeighborDetail, CascadingSimulationResponse } from '../types/index.ts';
-
-interface MapRecenterProps {
-  center: [number, number];
-  zoom?: number;
-}
-
-function MapRecenter({ center, zoom = 9 }: MapRecenterProps) {
-  const map = useMap();
-  useEffect(() => {
-    map.flyTo(center, zoom, { duration: 1.2 });
-  }, [center[0], center[1], zoom, map]);
-  return null;
-}
 
 interface FacilityMapProps {
   facilities: Facility[];
@@ -31,9 +18,10 @@ export default function FacilityMap({
   cascadingResult,
   onSelectFacility
 }: FacilityMapProps) {
-  const defaultCenter: [number, number] = selectedFacility
-    ? [selectedFacility.latitude, selectedFacility.longitude]
-    : [9.0820, 8.6753];
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const networkLayerRef = useRef<L.LayerGroup | null>(null);
 
   function getMarkerColor(fac: Facility): string {
     if (fac.is_silent) return '#f59e0b';
@@ -43,101 +31,126 @@ export default function FacilityMap({
     return '#10b981';
   }
 
-  const networkPolylines = selectedFacility && neighbors.length > 0
-    ? neighbors.map(neighbor => {
-        const targetFac = facilities.find(f => f.facility_id === neighbor.facility_id);
-        if (!targetFac) return null;
-        return {
-          key: `edge-${selectedFacility.facility_id}-${neighbor.facility_id}`,
-          positions: [
-            [selectedFacility.latitude, selectedFacility.longitude],
-            [targetFac.latitude, targetFac.longitude]
-          ] as [number, number][],
-          distance: neighbor.distance_km,
-          weight: neighbor.overflow_weight,
-          targetName: neighbor.facility_name
-        };
-      }).filter(Boolean)
-    : [];
+  // Initialize Map
+  useEffect(() => {
+    if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-  return (
-    <div style={{ height: '100%', minHeight: '650px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-subtle)', position: 'relative' }}>
-      <MapContainer
-        center={defaultCenter}
-        zoom={selectedFacility ? 9 : 6}
-        style={{ height: '100%', minHeight: '650px', width: '100%' }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+    const map = L.map(mapContainerRef.current, {
+      center: [9.0820, 8.6753],
+      zoom: 6,
+      zoomControl: true,
+    });
 
-        {selectedFacility && (
-          <MapRecenter
-            center={[selectedFacility.latitude, selectedFacility.longitude]}
-            zoom={9}
-          />
-        )}
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
 
-        {networkPolylines.map(line => (
-          line && (
-            <Polyline
-              key={line.key}
-              positions={line.positions}
-              pathOptions={{
+    markersLayerRef.current = L.layerGroup().addTo(map);
+    networkLayerRef.current = L.layerGroup().addTo(map);
+    mapInstanceRef.current = map;
+
+    // Force Leaflet to recalculate container size
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+
+    return () => {
+      clearTimeout(timer);
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, []);
+
+  // Update Markers when facilities or selection changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const markersLayer = markersLayerRef.current;
+    if (!map || !markersLayer) return;
+
+    markersLayer.clearLayers();
+
+    facilities.slice(0, 400).forEach(fac => {
+      if (!fac.latitude || !fac.longitude) return;
+
+      const isSelected = selectedFacility?.facility_id === fac.facility_id;
+      const color = getMarkerColor(fac);
+      const radius = isSelected ? 10 : fac.risk_tier === 'CRITICAL' ? 7 : 5;
+
+      const circle = L.circleMarker([fac.latitude, fac.longitude], {
+        radius,
+        fillColor: color,
+        fillOpacity: isSelected ? 1 : 0.8,
+        color: isSelected ? '#ffffff' : color,
+        weight: isSelected ? 3 : 1.5,
+      });
+
+      const popupContent = `
+        <div style="font-family: sans-serif; padding: 4px; min-width: 180px; color: #0f172a;">
+          <div style="font-weight: 700; font-size: 0.9rem;">${fac.facility_name}</div>
+          <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">
+            ${fac.lga_name} LGA, ${fac.state} (${fac.geopolitical_zone})
+          </div>
+          <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.75rem; font-weight: 700;">
+              Risk: ${fac.base_risk_score}/100 (${fac.risk_tier})
+            </span>
+            ${fac.is_silent ? '<span style="color: #d97706; font-weight: 700; font-size: 0.7rem;">⚠️ SILENT</span>' : ''}
+          </div>
+          <div style="font-size: 0.72rem; color: #475569; margin-top: 4px;">
+            Staff: ${fac.total_staff} • Cold Chain: ${fac.has_cold_chain ? 'Yes' : 'No'}
+          </div>
+        </div>
+      `;
+
+      circle.bindPopup(popupContent);
+      circle.on('click', () => onSelectFacility(fac));
+      circle.addTo(markersLayer);
+    });
+  }, [facilities, selectedFacility?.facility_id]);
+
+  // Update Network Polyline Edges & Center
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const networkLayer = networkLayerRef.current;
+    if (!map || !networkLayer) return;
+
+    networkLayer.clearLayers();
+
+    if (selectedFacility && selectedFacility.latitude && selectedFacility.longitude) {
+      map.flyTo([selectedFacility.latitude, selectedFacility.longitude], 10, {
+        duration: 1.0,
+      });
+
+      if (neighbors && neighbors.length > 0) {
+        neighbors.forEach(neighbor => {
+          const targetFac = facilities.find(f => f.facility_id === neighbor.facility_id);
+          if (targetFac && targetFac.latitude && targetFac.longitude) {
+            L.polyline(
+              [
+                [selectedFacility.latitude, selectedFacility.longitude],
+                [targetFac.latitude, targetFac.longitude],
+              ],
+              {
                 color: cascadingResult ? '#ef4444' : '#06b6d4',
                 weight: cascadingResult ? 3.5 : 2.5,
                 dashArray: cascadingResult ? '8, 6' : '4, 6',
-                opacity: 0.9
-              }}
-            />
-          )
-        ))}
+                opacity: 0.9,
+              }
+            ).addTo(networkLayer);
+          }
+        });
+      }
+    }
+  }, [selectedFacility?.facility_id, neighbors, cascadingResult]);
 
-        {facilities.slice(0, 500).map(fac => {
-          const isSelected = selectedFacility?.facility_id === fac.facility_id;
-          const color = getMarkerColor(fac);
-          const radius = isSelected ? 10 : fac.risk_tier === 'CRITICAL' ? 7 : 5;
+  return (
+    <div style={{ height: '100%', minHeight: '650px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-subtle)', position: 'relative' }}>
+      <div
+        ref={mapContainerRef}
+        style={{ height: '100%', minHeight: '650px', width: '100%', background: '#0f172a' }}
+      />
 
-          return (
-            <CircleMarker
-              key={fac.facility_id}
-              center={[fac.latitude, fac.longitude]}
-              radius={radius}
-              pathOptions={{
-                color: isSelected ? '#ffffff' : color,
-                fillColor: color,
-                fillOpacity: isSelected ? 1 : 0.8,
-                weight: isSelected ? 3 : 1.5
-              }}
-              eventHandlers={{
-                click: () => onSelectFacility(fac)
-              }}
-            >
-              <Popup className="custom-map-popup">
-                <div style={{ color: '#0f172a', padding: '4px', minWidth: '180px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{fac.facility_name}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>
-                    {fac.lga_name} LGA, {fac.state} ({fac.geopolitical_zone})
-                  </div>
-                  <div style={{ marginTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>
-                      Risk: {fac.base_risk_score}/100 ({fac.risk_tier})
-                    </span>
-                    {fac.is_silent && <span style={{ color: '#d97706', fontWeight: 700, fontSize: '0.7rem' }}>⚠️ SILENT</span>}
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: '#475569', marginTop: '4px' }}>
-                    Staff: {fac.total_staff} • Cold Chain: {fac.has_cold_chain ? 'Yes' : 'No'}
-                  </div>
-                </div>
-              </Popup>
-            </CircleMarker>
-          );
-        })}
-      </MapContainer>
-
-      {/* Map Legend Overlay */}
       <div style={{
         position: 'absolute',
         bottom: '16px',
@@ -173,7 +186,7 @@ export default function FacilityMap({
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
-          <span>Silent / Non-Reporting (Blind Spot)</span>
+          <span>Silent / Non-Reporting</span>
         </div>
       </div>
     </div>
