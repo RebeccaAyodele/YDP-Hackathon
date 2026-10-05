@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Activity, 
   AlertTriangle, 
@@ -70,6 +70,11 @@ export default function App() {
     }
   }
 
+  const handleSelectFacility = useCallback((fac: Facility) => {
+    setSelectedFacility(fac);
+    setCascadingResult(null);
+  }, []);
+
   async function handleSimulateCascading(facId: string) {
     setSimulating(true);
     try {
@@ -82,13 +87,16 @@ export default function App() {
     }
   }
 
-  const filteredFacilities = facilities.filter(f => {
-    const q = searchQuery.toLowerCase();
-    return f.facility_name?.toLowerCase().includes(q) ||
-           f.lga_name?.toLowerCase().includes(q) ||
-           f.state?.toLowerCase().includes(q) ||
-           (f.nhfr_facility_code && f.nhfr_facility_code.toLowerCase().includes(q));
-  });
+  const filteredFacilities = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return facilities;
+    return facilities.filter(f => 
+      f.facility_name?.toLowerCase().includes(q) ||
+      f.lga_name?.toLowerCase().includes(q) ||
+      f.state?.toLowerCase().includes(q) ||
+      (f.nhfr_facility_code && f.nhfr_facility_code.toLowerCase().includes(q))
+    );
+  }, [facilities, searchQuery]);
 
   return (
     <div className="app-container">
@@ -320,7 +328,7 @@ export default function App() {
                 return (
                   <div 
                     key={fac.facility_id}
-                    onClick={() => { setSelectedFacility(fac); setCascadingResult(null); }}
+                    onClick={() => handleSelectFacility(fac)}
                     style={{
                       padding: '10px 12px',
                       borderRadius: '8px',
@@ -358,10 +366,7 @@ export default function App() {
               selectedFacility={selectedFacility}
               neighbors={neighbors}
               cascadingResult={cascadingResult}
-              onSelectFacility={fac => {
-                setSelectedFacility(fac);
-                setCascadingResult(null);
-              }}
+              onSelectFacility={handleSelectFacility}
             />
           </div>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Facility, NeighborDetail, CascadingSimulationResponse } from '../types/index.ts';
@@ -11,7 +11,35 @@ interface FacilityMapProps {
   onSelectFacility: (fac: Facility) => void;
 }
 
-export default function FacilityMap({
+function getMarkerColor(fac: Facility): string {
+  if (fac.is_silent) return '#f59e0b';
+  if (fac.risk_tier === 'CRITICAL') return '#ef4444';
+  if (fac.risk_tier === 'HIGH') return '#f97316';
+  if (fac.risk_tier === 'MEDIUM') return '#eab308';
+  return '#10b981';
+}
+
+function createPopupContent(fac: Facility): string {
+  return `
+    <div style="font-family: sans-serif; padding: 4px; min-width: 180px; color: #0f172a;">
+      <div style="font-weight: 700; font-size: 0.9rem;">${fac.facility_name}</div>
+      <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">
+        ${fac.lga_name} LGA, ${fac.state} (${fac.geopolitical_zone})
+      </div>
+      <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.75rem; font-weight: 700;">
+          Risk: ${fac.base_risk_score}/100 (${fac.risk_tier})
+        </span>
+        ${fac.is_silent ? '<span style="color: #d97706; font-weight: 700; font-size: 0.7rem;">⚠️ SILENT</span>' : ''}
+      </div>
+      <div style="font-size: 0.72rem; color: #475569; margin-top: 4px;">
+        Staff: ${fac.total_staff} • Cold Chain: ${fac.has_cold_chain ? 'Yes' : 'No'}
+      </div>
+    </div>
+  `;
+}
+
+function FacilityMapComponent({
   facilities,
   selectedFacility,
   neighbors = [],
@@ -26,15 +54,7 @@ export default function FacilityMap({
   const markerMapRef = useRef<Map<string, L.CircleMarker>>(new Map());
   const prevSelectedIdRef = useRef<string | null>(null);
 
-  function getMarkerColor(fac: Facility): string {
-    if (fac.is_silent) return '#f59e0b';
-    if (fac.risk_tier === 'CRITICAL') return '#ef4444';
-    if (fac.risk_tier === 'HIGH') return '#f97316';
-    if (fac.risk_tier === 'MEDIUM') return '#eab308';
-    return '#10b981';
-  }
-
-  // Initialize Map with Hardware-Accelerated Canvas
+  // Initialize Map with Hardware-Accelerated Canvas & Parallelized Tile Layer
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
@@ -42,20 +62,28 @@ export default function FacilityMap({
       center: [9.0820, 8.6753],
       zoom: 6,
       zoomControl: true,
-      preferCanvas: true, // Hardware-accelerated GPU canvas rendering
-      wheelDebounceTime: 40,
+      preferCanvas: true,
+      wheelDebounceTime: 60,
+      wheelPxPerZoomLevel: 100,
+      inertia: true,
+      inertiaDeceleration: 3000,
+      inertiaMaxSpeed: 1500,
+      zoomAnimation: true,
+      fadeAnimation: true,
+      markerZoomAnimation: true,
     });
 
-    // High performance tile layer configuration
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Parallel multi-subdomain tile fetching for zero-lag panning
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      subdomains: ['a', 'b', 'c'],
       maxZoom: 18,
       attribution: '&copy; OpenStreetMap',
       updateWhenIdle: true,
       updateWhenZooming: false,
-      keepBuffer: 6,
+      keepBuffer: 2,
     }).addTo(map);
 
-    const canvasRenderer = L.canvas({ padding: 0.5 });
+    const canvasRenderer = L.canvas({ padding: 0.25 });
     canvasRendererRef.current = canvasRenderer;
 
     markersLayerRef.current = L.layerGroup().addTo(map);
@@ -64,7 +92,7 @@ export default function FacilityMap({
 
     const timer = setTimeout(() => {
       map.invalidateSize();
-    }, 200);
+    }, 150);
 
     return () => {
       clearTimeout(timer);
@@ -73,7 +101,7 @@ export default function FacilityMap({
     };
   }, []);
 
-  // Update/Rebuild markers only when the facilities array actually changes
+  // Update/Rebuild markers cleanly using Canvas with lazy popups
   useEffect(() => {
     const map = mapInstanceRef.current;
     const markersLayer = markersLayerRef.current;
@@ -94,33 +122,23 @@ export default function FacilityMap({
         renderer: canvasRenderer,
         radius,
         fillColor: color,
-        fillOpacity: isSelected ? 1 : 0.8,
+        fillOpacity: isSelected ? 1 : 0.85,
         color: isSelected ? '#ffffff' : color,
         weight: isSelected ? 3 : 1.5,
       });
 
-      const popupContent = `
-        <div style="font-family: sans-serif; padding: 4px; min-width: 180px; color: #0f172a;">
-          <div style="font-weight: 700; font-size: 0.9rem;">${fac.facility_name}</div>
-          <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">
-            ${fac.lga_name} LGA, ${fac.state} (${fac.geopolitical_zone})
-          </div>
-          <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 0.75rem; font-weight: 700;">
-              Risk: ${fac.base_risk_score}/100 (${fac.risk_tier})
-            </span>
-            ${fac.is_silent ? '<span style="color: #d97706; font-weight: 700; font-size: 0.7rem;">⚠️ SILENT</span>' : ''}
-          </div>
-          <div style="font-size: 0.72rem; color: #475569; margin-top: 4px;">
-            Staff: ${fac.total_staff} • Cold Chain: ${fac.has_cold_chain ? 'Yes' : 'No'}
-          </div>
-        </div>
-      `;
+      circle.on('click', (e) => {
+        L.DomEvent.stopPropagation(e);
+        onSelectFacility(fac);
+        
+        // Lazy dynamic popup creation on click
+        L.popup()
+          .setLatLng([fac.latitude, fac.longitude])
+          .setContent(createPopupContent(fac))
+          .openOn(map);
+      });
 
-      circle.bindPopup(popupContent);
-      circle.on('click', () => onSelectFacility(fac));
       circle.addTo(markersLayer);
-
       markerMapRef.current.set(fac.facility_id, circle);
     });
   }, [facilities]);
@@ -139,7 +157,7 @@ export default function FacilityMap({
           radius: prevFac.risk_tier === 'CRITICAL' ? 7 : 5,
           color: color,
           weight: 1.5,
-          fillOpacity: 0.8,
+          fillOpacity: 0.85,
         });
       }
     }
@@ -158,7 +176,7 @@ export default function FacilityMap({
     prevSelectedIdRef.current = currentId || null;
   }, [selectedFacility?.facility_id]);
 
-  // Update Network Polyline Edges & Glide
+  // Smooth camera centering and polyline network rendering
   useEffect(() => {
     const map = mapInstanceRef.current;
     const networkLayer = networkLayerRef.current;
@@ -167,8 +185,14 @@ export default function FacilityMap({
     networkLayer.clearLayers();
 
     if (selectedFacility && selectedFacility.latitude && selectedFacility.longitude) {
-      map.flyTo([selectedFacility.latitude, selectedFacility.longitude], 10, {
-        duration: 0.8,
+      map.stop();
+      
+      const currentZoom = map.getZoom();
+      const targetZoom = Math.max(currentZoom, 10);
+      
+      map.flyTo([selectedFacility.latitude, selectedFacility.longitude], targetZoom, {
+        duration: 0.45,
+        easeLinearity: 0.5,
       });
 
       if (neighbors && neighbors.length > 0) {
@@ -214,7 +238,8 @@ export default function FacilityMap({
         display: 'flex',
         flexDirection: 'column',
         gap: '6px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
+        boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+        pointerEvents: 'none'
       }}>
         <div style={{ fontWeight: 700, marginBottom: '2px', color: '#fff' }}>Geospatial Triage Legend</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -241,3 +266,6 @@ export default function FacilityMap({
     </div>
   );
 }
+
+const FacilityMap = memo(FacilityMapComponent);
+export default FacilityMap;

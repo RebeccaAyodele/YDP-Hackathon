@@ -114,10 +114,22 @@ body {
   50% { border-color: rgba(220, 38, 38, 0.9); box-shadow: 0 0 10px rgba(220, 38, 38, 0.3); }
 }
 
-/* Leaflet Map Customizations */
+/* Leaflet Map Performance Customizations */
 .leaflet-container {
   background: #0f172a !important;
   font-family: var(--font-main) !important;
+  contain: layout paint size;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.leaflet-tile-container img {
+  will-change: transform;
+}
+
+.leaflet-pane > canvas {
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .leaflet-popup-content-wrapper {
