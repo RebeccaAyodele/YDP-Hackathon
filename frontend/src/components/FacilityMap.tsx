@@ -20,8 +20,11 @@ export default function FacilityMap({
 }: FacilityMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const canvasRendererRef = useRef<L.Canvas | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const networkLayerRef = useRef<L.LayerGroup | null>(null);
+  const markerMapRef = useRef<Map<string, L.CircleMarker>>(new Map());
+  const prevSelectedIdRef = useRef<string | null>(null);
 
   function getMarkerColor(fac: Facility): string {
     if (fac.is_silent) return '#f59e0b';
@@ -31,7 +34,7 @@ export default function FacilityMap({
     return '#10b981';
   }
 
-  // Initialize Map
+  // Initialize Map with Hardware-Accelerated Canvas
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
@@ -39,21 +42,29 @@ export default function FacilityMap({
       center: [9.0820, 8.6753],
       zoom: 6,
       zoomControl: true,
+      preferCanvas: true, // Hardware-accelerated GPU canvas rendering
+      wheelDebounceTime: 40,
     });
 
+    // High performance tile layer configuration
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution: '&copy; OpenStreetMap',
+      updateWhenIdle: true,
+      updateWhenZooming: false,
+      keepBuffer: 6,
     }).addTo(map);
+
+    const canvasRenderer = L.canvas({ padding: 0.5 });
+    canvasRendererRef.current = canvasRenderer;
 
     markersLayerRef.current = L.layerGroup().addTo(map);
     networkLayerRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
 
-    // Force Leaflet to recalculate container size
     const timer = setTimeout(() => {
       map.invalidateSize();
-    }, 250);
+    }, 200);
 
     return () => {
       clearTimeout(timer);
@@ -62,15 +73,17 @@ export default function FacilityMap({
     };
   }, []);
 
-  // Update Markers when facilities or selection changes
+  // Update/Rebuild markers only when the facilities array actually changes
   useEffect(() => {
     const map = mapInstanceRef.current;
     const markersLayer = markersLayerRef.current;
-    if (!map || !markersLayer) return;
+    const canvasRenderer = canvasRendererRef.current;
+    if (!map || !markersLayer || !canvasRenderer) return;
 
     markersLayer.clearLayers();
+    markerMapRef.current.clear();
 
-    facilities.slice(0, 400).forEach(fac => {
+    facilities.forEach(fac => {
       if (!fac.latitude || !fac.longitude) return;
 
       const isSelected = selectedFacility?.facility_id === fac.facility_id;
@@ -78,6 +91,7 @@ export default function FacilityMap({
       const radius = isSelected ? 10 : fac.risk_tier === 'CRITICAL' ? 7 : 5;
 
       const circle = L.circleMarker([fac.latitude, fac.longitude], {
+        renderer: canvasRenderer,
         radius,
         fillColor: color,
         fillOpacity: isSelected ? 1 : 0.8,
@@ -106,10 +120,45 @@ export default function FacilityMap({
       circle.bindPopup(popupContent);
       circle.on('click', () => onSelectFacility(fac));
       circle.addTo(markersLayer);
-    });
-  }, [facilities, selectedFacility?.facility_id]);
 
-  // Update Network Polyline Edges & Center
+      markerMapRef.current.set(fac.facility_id, circle);
+    });
+  }, [facilities]);
+
+  // Fast lightweight selection highlight without rebuilding markers
+  useEffect(() => {
+    const prevId = prevSelectedIdRef.current;
+    const currentId = selectedFacility?.facility_id;
+
+    if (prevId && markerMapRef.current.has(prevId)) {
+      const prevMarker = markerMapRef.current.get(prevId)!;
+      const prevFac = facilities.find(f => f.facility_id === prevId);
+      if (prevFac) {
+        const color = getMarkerColor(prevFac);
+        prevMarker.setStyle({
+          radius: prevFac.risk_tier === 'CRITICAL' ? 7 : 5,
+          color: color,
+          weight: 1.5,
+          fillOpacity: 0.8,
+        });
+      }
+    }
+
+    if (currentId && markerMapRef.current.has(currentId)) {
+      const currentMarker = markerMapRef.current.get(currentId)!;
+      currentMarker.setStyle({
+        radius: 10,
+        color: '#ffffff',
+        weight: 3,
+        fillOpacity: 1,
+      });
+      currentMarker.bringToFront();
+    }
+
+    prevSelectedIdRef.current = currentId || null;
+  }, [selectedFacility?.facility_id]);
+
+  // Update Network Polyline Edges & Glide
   useEffect(() => {
     const map = mapInstanceRef.current;
     const networkLayer = networkLayerRef.current;
@@ -119,7 +168,7 @@ export default function FacilityMap({
 
     if (selectedFacility && selectedFacility.latitude && selectedFacility.longitude) {
       map.flyTo([selectedFacility.latitude, selectedFacility.longitude], 10, {
-        duration: 1.0,
+        duration: 0.8,
       });
 
       if (neighbors && neighbors.length > 0) {
