@@ -1,0 +1,471 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Activity, 
+  AlertTriangle, 
+  Building2, 
+  Radio, 
+  Search, 
+  Zap, 
+  RefreshCw,
+  Share2
+} from 'lucide-react';
+import { fetchOverviewStats, fetchFacilities, simulateCascadingRisk } from './services/api.ts';
+import { Facility, OverviewStats, CascadingSimulationResponse } from './types/index.ts';
+
+export default function App() {
+  const [stats, setStats] = useState<OverviewStats | null>(null);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
+  const [selectedState, setSelectedState] = useState<string>('');
+  const [selectedTier, setSelectedTier] = useState<string>('');
+  const [onlySilent, setOnlySilent] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [cascadingResult, setCascadingResult] = useState<CascadingSimulationResponse | null>(null);
+  const [simulating, setSimulating] = useState<boolean>(false);
+
+  useEffect(() => {
+    loadData();
+  }, [selectedState, selectedTier, onlySilent]);
+
+  async function loadData() {
+    setLoading(true);
+    try {
+      const [statsData, facData] = await Promise.all([
+        fetchOverviewStats().catch(() => null),
+        fetchFacilities({ 
+          state: selectedState || undefined,
+          risk_tier: selectedTier || undefined,
+          is_silent: onlySilent ? true : undefined,
+          limit: 100
+        }).catch(() => ({ facilities: [], total_count: 0, page: 1, limit: 50, total_pages: 1, filter_summary: { critical_risk: 0, high_risk: 0, medium_risk: 0, low_risk: 0, silent_facilities: 0 } }))
+      ]);
+      setStats(statsData);
+      setFacilities(facData.facilities || []);
+      if (facData.facilities?.length > 0 && !selectedFacility) {
+        setSelectedFacility(facData.facilities[0]);
+      }
+    } catch (err) {
+      console.error('Error loading dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSimulateCascading(facId: string) {
+    setSimulating(true);
+    try {
+      const res = await simulateCascadingRisk(facId, 35);
+      setCascadingResult(res);
+    } catch (err) {
+      console.error('Simulation error:', err);
+    } finally {
+      setSimulating(false);
+    }
+  }
+
+  const filteredFacilities = facilities.filter(f => {
+    const q = searchQuery.toLowerCase();
+    return f.facility_name?.toLowerCase().includes(q) ||
+           f.lga_name?.toLowerCase().includes(q) ||
+           f.state?.toLowerCase().includes(q);
+  });
+
+  return (
+    <div className="app-container">
+      <header style={{
+        background: 'rgba(15, 23, 42, 0.95)',
+        borderBottom: '1px solid var(--border-subtle)',
+        padding: '16px 28px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        backdropFilter: 'blur(8px)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 0 15px rgba(16, 185, 129, 0.4)'
+          }}>
+            <Activity size={22} color="#fff" />
+          </div>
+          <div>
+            <h1 style={{ fontSize: '1.25rem', fontWeight: '800', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              PHC Pulse <span className="badge badge-low" style={{ fontSize: '0.65rem' }}>EARLY WARNING</span>
+            </h1>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+              Primary Healthcare Risk Triage & Cascading Demand Early-Warning
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button 
+            onClick={loadData}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)',
+              padding: '8px 14px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.85rem',
+              fontWeight: 500,
+            }}
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            Sync Data
+          </button>
+        </div>
+      </header>
+
+      <main style={{ padding: '24px 28px', maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
+        <section style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '16px',
+          marginBottom: '24px'
+        }}>
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Total Facilities</span>
+              <Building2 size={18} color="#06b6d4" />
+            </div>
+            <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>{stats?.total_facilities || facilities.length || '—'}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+              Monitored across {stats?.states_count || 6} focal states
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Critical / High Risk</span>
+              <AlertTriangle size={18} color="#ef4444" />
+            </div>
+            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#f87171' }}>
+              {stats ? (stats.critical_risk_count + stats.high_risk_count) : '—'}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+              {stats?.critical_risk_count || 0} Critical • {stats?.high_risk_count || 0} High Priority
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Silent Blind Spots</span>
+              <Radio size={18} color="#f59e0b" />
+            </div>
+            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fbbf24' }}>
+              {stats?.silent_facilities_count ?? '—'}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+              Clinics missing reports (compounding decay)
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Spatial Network</span>
+              <Share2 size={18} color="#8b5cf6" />
+            </div>
+            <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>3,876 Edges</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+              k=3 Haversine proximity topology
+            </div>
+          </div>
+        </section>
+
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '12px',
+          marginBottom: '20px',
+          alignItems: 'center'
+        }}>
+          <div style={{ position: 'relative', flex: '1 1 280px' }}>
+            <Search size={16} color="var(--text-secondary)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+            <input 
+              type="text" 
+              placeholder="Search facility name, LGA, ward..." 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 14px 10px 38px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '8px',
+                color: '#fff',
+                fontSize: '0.9rem',
+                outline: 'none'
+              }}
+            />
+          </div>
+
+          <select 
+            value={selectedState} 
+            onChange={e => setSelectedState(e.target.value)}
+            style={{
+              padding: '10px 14px',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '8px',
+              color: '#fff',
+              fontSize: '0.9rem',
+              outline: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="">All States (6 Geopolitical Zones)</option>
+            <option value="Sokoto">Sokoto (North West - High Vulnerability)</option>
+            <option value="Yobe">Yobe (North East - High Vulnerability)</option>
+            <option value="Ebonyi">Ebonyi (South East)</option>
+            <option value="Plateau">Plateau (North Central)</option>
+            <option value="Bayelsa">Bayelsa (South South - Riverine)</option>
+            <option value="Lagos">Lagos (South West - Urban Benchmark)</option>
+          </select>
+
+          <select 
+            value={selectedTier} 
+            onChange={e => setSelectedTier(e.target.value)}
+            style={{
+              padding: '10px 14px',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '8px',
+              color: '#fff',
+              fontSize: '0.9rem',
+              outline: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="">All Risk Tiers</option>
+            <option value="CRITICAL">Critical Risk (70-100)</option>
+            <option value="HIGH">High Risk (50-69)</option>
+            <option value="MEDIUM">Medium Risk (30-49)</option>
+            <option value="LOW">Low Risk (0-29)</option>
+          </select>
+
+          <button
+            onClick={() => setOnlySilent(!onlySilent)}
+            style={{
+              padding: '10px 16px',
+              background: onlySilent ? 'rgba(245, 158, 11, 0.2)' : 'var(--bg-secondary)',
+              border: `1px solid ${onlySilent ? 'var(--risk-medium)' : 'var(--border-subtle)'}`,
+              borderRadius: '8px',
+              color: onlySilent ? '#fbbf24' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: 600
+            }}
+          >
+            {onlySilent ? '⚡ Showing Silent Only' : 'Filter Silent Facilities'}
+          </button>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1.2fr 1fr',
+          gap: '20px'
+        }}>
+          <div className="glass-panel" style={{ padding: '20px', maxHeight: '720px', overflowY: 'auto' }}>
+            <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Triage Ranked Facilities ({filteredFacilities.length})</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sorted by Risk</span>
+            </h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {filteredFacilities.slice(0, 30).map(fac => {
+                const isSelected = selectedFacility?.facility_id === fac.facility_id;
+                const tierClass = fac.risk_tier === 'CRITICAL' ? 'badge-critical' 
+                                : fac.risk_tier === 'HIGH' ? 'badge-high' 
+                                : fac.risk_tier === 'MEDIUM' ? 'badge-medium' : 'badge-low';
+                return (
+                  <div 
+                    key={fac.facility_id}
+                    onClick={() => { setSelectedFacility(fac); setCascadingResult(null); }}
+                    style={{
+                      padding: '14px',
+                      borderRadius: '8px',
+                      background: isSelected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.02)',
+                      border: `1px solid ${isSelected ? 'var(--emerald-500)' : 'var(--border-subtle)'}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#fff' }}>{fac.facility_name}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                          {fac.lga_name}, {fac.state} • {fac.facility_type}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span className={`badge ${tierClass}`}>
+                          {fac.risk_tier} ({fac.base_risk_score})
+                        </span>
+                        {fac.is_silent && (
+                          <div style={{ fontSize: '0.68rem', color: '#fbbf24', marginTop: '4px', fontWeight: 700 }}>
+                            ⚠️ SILENT
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '8px', fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                      {fac.top_reason_summary}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '24px' }}>
+            {selectedFacility ? (
+              <div>
+                <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>
+                      CODE: {selectedFacility.nhfr_facility_code || selectedFacility.facility_id}
+                    </span>
+                    <span className={`badge ${selectedFacility.risk_tier === 'CRITICAL' ? 'badge-critical' : selectedFacility.risk_tier === 'HIGH' ? 'badge-high' : 'badge-low'}`}>
+                      RISK: {selectedFacility.base_risk_score}/100
+                    </span>
+                  </div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '6px' }}>
+                    {selectedFacility.facility_name}
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                    {selectedFacility.lga_name} LGA, {selectedFacility.state} State ({selectedFacility.geopolitical_zone})
+                  </p>
+                </div>
+
+                <div style={{ marginBottom: '18px' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                    TRIAGE REASONING BREAKDOWN
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {selectedFacility.detailed_reasons?.map((reason, idx) => (
+                      <div key={idx} style={{
+                        fontSize: '0.8rem',
+                        padding: '6px 10px',
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        borderRadius: '6px',
+                        borderLeft: '3px solid var(--risk-high)',
+                        color: 'var(--text-primary)'
+                      }}>
+                        {reason}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Staffing</div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{selectedFacility.total_staff} Workers ({selectedFacility.nurses_midwives_count} Nurses)</div>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Cold Chain</div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: selectedFacility.has_cold_chain ? 'var(--emerald-400)' : 'var(--risk-high)' }}>
+                      {selectedFacility.has_cold_chain ? 'Solar Refrigerator' : 'None (Passive)'}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{
+                  background: 'rgba(6, 182, 212, 0.05)',
+                  border: '1px solid rgba(6, 182, 212, 0.25)',
+                  borderRadius: '10px',
+                  padding: '16px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <Share2 size={16} color="var(--accent-cyan)" />
+                    <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
+                      Cascading Spillover Simulation
+                    </h4>
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                    Test patient overflow strain onto nearest neighboring facilities if this facility suffers a stockout shock.
+                  </p>
+
+                  <button
+                    onClick={() => handleSimulateCascading(selectedFacility.facility_id)}
+                    disabled={simulating}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    <Zap size={16} />
+                    {simulating ? 'Simulating Propagation...' : 'Simulate Neighbor Shock (+35 pts)'}
+                  </button>
+
+                  {cascadingResult && (
+                    <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
+                        Downstream Neighbor Impact:
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        {cascadingResult.affected_neighbors?.map(n => (
+                          <div key={n.facility_id} style={{
+                            fontSize: '0.78rem',
+                            padding: '8px 10px',
+                            background: n.jumped_to_critical ? 'rgba(220, 38, 38, 0.2)' : 'rgba(239, 68, 68, 0.08)',
+                            border: `1px solid ${n.jumped_to_critical ? 'rgba(220, 38, 38, 0.5)' : 'rgba(239, 68, 68, 0.2)'}`,
+                            borderRadius: '6px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <div>
+                              <div style={{ fontWeight: 600 }}>{n.facility_name} ({n.distance_km} km)</div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                Base: {n.original_base_risk} ➔ New: {n.new_adjusted_risk}
+                              </div>
+                            </div>
+                            <span style={{ color: 'var(--risk-high)', fontWeight: 700 }}>
+                              +{n.propagated_risk_increase} pts {n.jumped_to_critical ? '🚨 (CRITICAL)' : ''}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+                Select a facility on the left to inspect its dossier.
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
