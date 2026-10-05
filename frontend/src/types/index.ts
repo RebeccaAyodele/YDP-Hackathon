@@ -1,5 +1,15 @@
 export type RiskTier = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
+export interface CommodityStatus {
+  commodity_id: string;
+  name: string;
+  category: string;
+  unit: string;
+  status: 'ADEQUATE' | 'LOW' | 'STOCKOUT';
+  estimated_days_remaining: number;
+  is_cold_chain_required: boolean;
+}
+
 export interface RiskFactor {
   factor: string;
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
@@ -32,11 +42,13 @@ export interface Facility {
   ownership?: string;
   base_risk_score: number;
   adjusted_cascading_score?: number;
+  is_hidden_risk?: boolean;
   risk_tier: RiskTier;
   is_silent: boolean;
   top_reason_summary: string;
   detailed_reasons: string[];
   risk_factors: RiskFactor[];
+  commodities?: CommodityStatus[];
 }
 
 export interface NeighborDetail {
@@ -81,19 +93,31 @@ export interface OverviewStats {
 }
 
 export interface CascadingSimulationResponse {
-  simulated_source_facility: {
+  simulated_source: {
     facility_id: string;
     facility_name: string;
-    applied_shock_points: number;
+    applied_shock: number;
   };
-  affected_neighbors: Array<{
+  direct_hop1_neighbors: Array<{
     facility_id: string;
     facility_name: string;
     distance_km: number;
     overflow_weight: number;
-    original_base_risk: number;
-    propagated_risk_increase: number;
-    new_adjusted_risk: number;
+    original_risk: number;
+    added_risk: number;
+    new_risk: number;
     jumped_to_critical: boolean;
   }>;
+  secondary_hop2_neighbors: Array<{
+    facility_id: string;
+    facility_name: string;
+    originating_hop1_id: string;
+    distance_km: number;
+    overflow_weight: number;
+    original_risk: number;
+    added_risk: number;
+    new_risk: number;
+    jumped_to_critical: boolean;
+  }>;
+  total_facilities_destabilized: number;
 }

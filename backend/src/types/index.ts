@@ -1,5 +1,15 @@
 export type RiskTier = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
+export interface CommodityStatus {
+  commodity_id: string;
+  name: string;
+  category: string;
+  unit: string;
+  status: 'ADEQUATE' | 'LOW' | 'STOCKOUT';
+  estimated_days_remaining: number;
+  is_cold_chain_required: boolean;
+}
+
 export interface FacilityRecord {
   facility_id: string;
   facility_name: string;
@@ -49,11 +59,13 @@ export interface RiskFactor {
 export interface ScoredFacility extends FacilityRecord {
   base_risk_score: number;
   adjusted_cascading_score?: number;
+  is_hidden_risk?: boolean;
   risk_tier: RiskTier;
   is_silent: boolean;
   top_reason_summary: string;
   detailed_reasons: string[];
   risk_factors: RiskFactor[];
+  commodities?: CommodityStatus[];
 }
 
 export interface LGAContext {

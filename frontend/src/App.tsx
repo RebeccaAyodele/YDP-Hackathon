@@ -7,7 +7,9 @@ import {
   Search, 
   Zap, 
   RefreshCw,
-  Share2
+  Share2,
+  Package,
+  ArrowRight
 } from 'lucide-react';
 import { fetchOverviewStats, fetchFacilities, simulateCascadingRisk } from './services/api.ts';
 import { Facility, OverviewStats, CascadingSimulationResponse } from './types/index.ts';
@@ -182,7 +184,7 @@ export default function App() {
             </div>
             <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>3,876 Edges</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              k=3 Haversine proximity topology
+              k=3 Haversine multi-hop topology
             </div>
           </div>
         </section>
@@ -280,10 +282,10 @@ export default function App() {
           gridTemplateColumns: '1.2fr 1fr',
           gap: '20px'
         }}>
-          <div className="glass-panel" style={{ padding: '20px', maxHeight: '720px', overflowY: 'auto' }}>
+          <div className="glass-panel" style={{ padding: '20px', maxHeight: '780px', overflowY: 'auto' }}>
             <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span>Triage Ranked Facilities ({filteredFacilities.length})</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sorted by Risk</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Ranked by Base Risk</span>
             </h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -316,8 +318,13 @@ export default function App() {
                         <span className={`badge ${tierClass}`}>
                           {fac.risk_tier} ({fac.base_risk_score})
                         </span>
+                        {fac.is_hidden_risk && (
+                          <div style={{ fontSize: '0.68rem', color: '#f87171', marginTop: '4px', fontWeight: 700 }}>
+                            ⚡ HIDDEN RISK ({fac.adjusted_cascading_score})
+                          </div>
+                        )}
                         {fac.is_silent && (
-                          <div style={{ fontSize: '0.68rem', color: '#fbbf24', marginTop: '4px', fontWeight: 700 }}>
+                          <div style={{ fontSize: '0.68rem', color: '#fbbf24', marginTop: '2px', fontWeight: 700 }}>
                             ⚠️ SILENT
                           </div>
                         )}
@@ -333,7 +340,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="glass-panel" style={{ padding: '24px' }}>
+          <div className="glass-panel" style={{ padding: '24px', maxHeight: '780px', overflowY: 'auto' }}>
             {selectedFacility ? (
               <div>
                 <div style={{ borderBottom: '1px solid var(--border-subtle)', paddingBottom: '16px', marginBottom: '16px' }}>
@@ -341,9 +348,16 @@ export default function App() {
                     <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>
                       CODE: {selectedFacility.nhfr_facility_code || selectedFacility.facility_id}
                     </span>
-                    <span className={`badge ${selectedFacility.risk_tier === 'CRITICAL' ? 'badge-critical' : selectedFacility.risk_tier === 'HIGH' ? 'badge-high' : 'badge-low'}`}>
-                      RISK: {selectedFacility.base_risk_score}/100
-                    </span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <span className={`badge ${selectedFacility.risk_tier === 'CRITICAL' ? 'badge-critical' : selectedFacility.risk_tier === 'HIGH' ? 'badge-high' : 'badge-low'}`}>
+                        BASE: {selectedFacility.base_risk_score}
+                      </span>
+                      {selectedFacility.adjusted_cascading_score && (
+                        <span className="badge badge-medium">
+                          CASCADE: {selectedFacility.adjusted_cascading_score}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginTop: '6px' }}>
                     {selectedFacility.facility_name}
@@ -373,19 +387,41 @@ export default function App() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Staffing</div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{selectedFacility.total_staff} Workers ({selectedFacility.nurses_midwives_count} Nurses)</div>
-                  </div>
-                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Cold Chain</div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: selectedFacility.has_cold_chain ? 'var(--emerald-400)' : 'var(--risk-high)' }}>
-                      {selectedFacility.has_cold_chain ? 'Solar Refrigerator' : 'None (Passive)'}
+                {/* Essential Commodities Inventory Card */}
+                {selectedFacility.commodities && selectedFacility.commodities.length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Package size={14} color="#06b6d4" />
+                      ESSENTIAL COMMODITIES INVENTORY
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      {selectedFacility.commodities.slice(0, 6).map(comm => {
+                        const statusBadge = comm.status === 'STOCKOUT' ? 'badge-critical'
+                                          : comm.status === 'LOW' ? 'badge-medium' : 'badge-low';
+                        return (
+                          <div key={comm.commodity_id} style={{
+                            padding: '8px 10px',
+                            background: 'rgba(255, 255, 255, 0.02)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '6px'
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>{comm.name}</span>
+                              <span className={`badge ${statusBadge}`} style={{ fontSize: '0.62rem' }}>
+                                {comm.status}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              {comm.estimated_days_remaining > 0 ? `~${comm.estimated_days_remaining} days supply` : 'Immediate Restock Needed'}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                </div>
+                )}
 
+                {/* Multi-Hop Cascading Spillover Simulation */}
                 <div style={{
                   background: 'rgba(6, 182, 212, 0.05)',
                   border: '1px solid rgba(6, 182, 212, 0.25)',
@@ -395,11 +431,11 @@ export default function App() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                     <Share2 size={16} color="var(--accent-cyan)" />
                     <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-                      Cascading Spillover Simulation
+                      Multi-Hop Cascading Simulation
                     </h4>
                   </div>
                   <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                    Test patient overflow strain onto nearest neighboring facilities if this facility suffers a stockout shock.
+                    Simulate how a stockout shock ripples through 1st-degree and 2nd-degree neighbor facilities.
                   </p>
 
                   <button
@@ -422,16 +458,17 @@ export default function App() {
                     }}
                   >
                     <Zap size={16} />
-                    {simulating ? 'Simulating Propagation...' : 'Simulate Neighbor Shock (+35 pts)'}
+                    {simulating ? 'Calculating Network Cascade...' : 'Simulate Stockout Shock Wave (+35 pts)'}
                   </button>
 
                   {cascadingResult && (
-                    <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                      {/* Direct 1st Hop */}
                       <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
-                        Downstream Neighbor Impact:
+                        Hop 1: Direct Neighbors Impact ({cascadingResult.direct_hop1_neighbors?.length || 0})
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {cascadingResult.affected_neighbors?.map(n => (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+                        {cascadingResult.direct_hop1_neighbors?.map(n => (
                           <div key={n.facility_id} style={{
                             fontSize: '0.78rem',
                             padding: '8px 10px',
@@ -445,15 +482,49 @@ export default function App() {
                             <div>
                               <div style={{ fontWeight: 600 }}>{n.facility_name} ({n.distance_km} km)</div>
                               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                                Base: {n.original_base_risk} ➔ New: {n.new_adjusted_risk}
+                                Base: {n.original_risk} ➔ New: {n.new_risk}
                               </div>
                             </div>
                             <span style={{ color: 'var(--risk-high)', fontWeight: 700 }}>
-                              +{n.propagated_risk_increase} pts {n.jumped_to_critical ? '🚨 (CRITICAL)' : ''}
+                              +{n.added_risk} pts {n.jumped_to_critical ? '🚨 (CRITICAL)' : ''}
                             </span>
                           </div>
                         ))}
                       </div>
+
+                      {/* Secondary 2nd Hop */}
+                      {cascadingResult.secondary_hop2_neighbors && cascadingResult.secondary_hop2_neighbors.length > 0 && (
+                        <>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fbbf24', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <ArrowRight size={14} />
+                            Hop 2: Ripple Domino Effect ({cascadingResult.secondary_hop2_neighbors.length})
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            {cascadingResult.secondary_hop2_neighbors.slice(0, 4).map(n => (
+                              <div key={n.facility_id} style={{
+                                fontSize: '0.75rem',
+                                padding: '6px 10px',
+                                background: 'rgba(245, 158, 11, 0.08)',
+                                border: '1px solid rgba(245, 158, 11, 0.25)',
+                                borderRadius: '6px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                              }}>
+                                <div>
+                                  <div style={{ fontWeight: 600 }}>{n.facility_name}</div>
+                                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                                    Base: {n.original_risk} ➔ New: {n.new_risk}
+                                  </div>
+                                </div>
+                                <span style={{ color: '#fbbf24', fontWeight: 700 }}>
+                                  +{n.added_risk} pts
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

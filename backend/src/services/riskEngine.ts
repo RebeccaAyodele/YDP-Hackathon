@@ -1,5 +1,38 @@
-import { getFacilities, getLgaIndicators } from './dataLoader.js';
-import { FacilityRecord, LGAContext, ScoredFacility, RiskTier, RiskFactor } from '../types/index.js';
+import { getFacilities, getLgaIndicators, getCommodities } from './dataLoader.js';
+import { FacilityRecord, LGAContext, ScoredFacility, RiskTier, RiskFactor, CommodityStatus } from '../types/index.js';
+import { computeAdjustedCascadingScores } from './cascadingEngine.js';
+
+export function generateFacilityCommodityStatus(facility: FacilityRecord): CommodityStatus[] {
+  const catalog = getCommodities();
+  const transportDiff = facility.transport_access_difficulty ?? 0.5;
+  const isSilent = (facility.baseline_reporting_prob ?? 0.5) < 0.35;
+
+  return catalog.map(c => {
+    let status: 'ADEQUATE' | 'LOW' | 'STOCKOUT' = 'ADEQUATE';
+    let daysRemaining = Math.round(20 - transportDiff * 14);
+
+    if (c.requires_cold_chain && !facility.has_cold_chain) {
+      status = 'STOCKOUT';
+      daysRemaining = 0;
+    } else if (isSilent && transportDiff > 0.6) {
+      status = Math.random() > 0.4 ? 'STOCKOUT' : 'LOW';
+      daysRemaining = status === 'STOCKOUT' ? 0 : Math.round(Math.random() * 4 + 1);
+    } else if (transportDiff > 0.65) {
+      status = 'LOW';
+      daysRemaining = Math.round(Math.random() * 5 + 2);
+    }
+
+    return {
+      commodity_id: c.commodity_id,
+      name: c.name,
+      category: c.category,
+      unit: c.unit,
+      status,
+      estimated_days_remaining: daysRemaining,
+      is_cold_chain_required: Boolean(c.requires_cold_chain),
+    };
+  });
+}
 
 export function calculateFacilityRisk(facility: FacilityRecord, lgaContext: LGAContext | null = null): ScoredFacility {
   let score = 0;
@@ -90,6 +123,7 @@ export function calculateFacilityRisk(facility: FacilityRecord, lgaContext: LGAC
   else if (normalizedScore >= 30) riskTier = 'MEDIUM';
 
   const topReasonSummary = reasons.slice(0, 3).join(' • ') || 'Operating within standard baseline parameters';
+  const commodities = generateFacilityCommodityStatus(facility);
 
   return {
     ...facility,
@@ -99,15 +133,23 @@ export function calculateFacilityRisk(facility: FacilityRecord, lgaContext: LGAC
     top_reason_summary: topReasonSummary,
     detailed_reasons: reasons,
     risk_factors: riskFactors,
+    commodities,
   };
 }
 
+let scoredFacilitiesCache: ScoredFacility[] | null = null;
+
 export function getScoredFacilities(): ScoredFacility[] {
+  if (scoredFacilitiesCache) return scoredFacilitiesCache;
+
   const facilities = getFacilities();
   const lgaMap = getLgaIndicators();
 
-  return facilities.map(fac => {
+  const baseScored = facilities.map(fac => {
     const lgaInfo = lgaMap[fac.lga_id] || null;
     return calculateFacilityRisk(fac, lgaInfo);
   });
+
+  scoredFacilitiesCache = computeAdjustedCascadingScores(baseScored);
+  return scoredFacilitiesCache;
 }
