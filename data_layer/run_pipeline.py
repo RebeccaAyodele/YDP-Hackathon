@@ -78,8 +78,8 @@ def run_pipeline():
     # Simulation Sanity Diagnostics
     reporting_rate = sim_df["report_submitted"].mean()
     stockout_rate = sim_df["is_stockout"].mean()
-    print(f"    - Overall report submission rate: {reporting_rate:.1%}")
-    print(f"    - Overall weekly stockout event rate: {stockout_rate:.1%}")
+    print(f"  Overall report submission rate: {reporting_rate:.1%}")
+    print(f"  Overall weekly stockout event rate: {stockout_rate:.1%}")
 
     # Spatial Adjacency Network Builder (Cascading Risk Layer Graph)
     print("\nBuilding Facility Spatial Network (Haversine k-NN).........")
@@ -88,14 +88,14 @@ def run_pipeline():
     print(f"Constructed spatial graph with {len(edges)} directed edges (k=3 neighbors per facility).")
 
     # Feature Extraction Pipeline
-    print("\nExtracting Feature Matrix for Risk Triage")
+    print("\nExtracting Feature Matrix for Risk Triage...")
     feature_extractor = FacilityFeatureExtractor(facilities, sim_df, eval_week=52)
     feat_df = feature_extractor.extract_features()
     feat_df.to_parquet(processed_dir / "facility_features.parquet", index=False)
     print(f"Saved {len(feat_df)} facility feature rows to {processed_dir.name}/facility_features.parquet")
 
     # Risk Engine: Gradient-Boosted ML Triage & Spatial Cascading Propagation
-    print("\nExecuting Risk Engine (ML Risk Scoring & Spatial Cascading Propagation)")
+    print("\nExecuting Risk Engine (ML Risk Scoring & Spatial Cascading Propagation)...")
     run_risk_engine(
         features_path=processed_dir / "facility_features.parquet",
         edges_path=processed_dir / "facility_graph_edges.json",
@@ -103,7 +103,7 @@ def run_pipeline():
     )
 
     # Database Ingestion: Supabase db
-    print("\nIngesting All Datasets Directly into Supabase Database")
+    print("\nIngesting All Datasets Directly into Supabase Database............")
     init_and_load_db(facilities_df=facilities_df, feat_df=feat_df, sim_df=sim_df, edges_data=edges)
 
     # quick check on data
