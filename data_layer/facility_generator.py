@@ -1,18 +1,20 @@
 import json
 import math
 import random
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional
 import sys
+from dataclasses import asdict, dataclass
 from pathlib import Path
+
 import pandas as pd
 
-# Ensure workspace root is in sys.path for data_layer package resolution
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 if str(WORKSPACE_ROOT) not in sys.path:
     sys.path.insert(0, str(WORKSPACE_ROOT))
 
-from data_layer.real_indicators import get_lga_indicators_map
+try:
+    from data_layer.real_indicators import get_lga_indicators_map
+except ImportError:
+    from real_indicators import get_lga_indicators_map
 
 
 @dataclass
@@ -42,8 +44,8 @@ class FacilityRecord:
     transport_access_difficulty: float  # 0.0 (tarred urban road) to 1.0 (creek speedboat / washed-out track)
     gsm_connectivity_score: float  # Mobile network signal quality (0.0 to 1.0)
     baseline_reporting_prob: float  # Prior probability of submitting weekly report on time
-    nhfr_facility_code: Optional[str] = None
-    ownership: Optional[str] = "Public"
+    nhfr_facility_code: str | None = None
+    ownership: str | None = "Public"
 
 
 # Mapping from GRID3 LGA spelling to our canonical lga_id
@@ -77,7 +79,7 @@ LGA_NAME_TO_ID = {
     ("Plateau", "Jos North"): "plateau_jos_north",
     ("Plateau", "Mangu"): "plateau_mangu",
     ("Plateau", "Shendam"): "plateau_shendam",
-    ("Plateau", "Pankshin"): "plateau_pankshin"
+    ("Plateau", "Pankshin"): "plateau_pankshin",
 }
 
 
@@ -107,17 +109,19 @@ class FacilityGenerator:
 
     _cached_df = None
 
-    def __init__(self, grid3_csv_path: Optional[Path] = None, seed: int = 42):
+    def __init__(self, grid3_csv_path: Path | None = None, seed: int = 42):
         self.rng = random.Random(seed)
         self.lga_map = get_lga_indicators_map()
 
-        # Locate GRID3 CSV
         if grid3_csv_path is None:
             here = Path(__file__).resolve().parent
             candidates = [
                 here / "GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv",
+                here / "data" / "raw" / "GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv",
                 here.parent / "GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv",
-                here / "data" / "raw" / "GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv"
+                *list(here.glob("*GRID3*.csv")),
+                *list(here.glob("*.csv")),
+                *list((here / "data" / "raw").glob("*.csv")),
             ]
             self.grid3_csv_path = next((p for p in candidates if p.exists()), None)
         else:
@@ -134,8 +138,8 @@ class FacilityGenerator:
 
         df = FacilityGenerator._cached_df
 
-        facilities: List[FacilityRecord] = []
-        target_states = set(lga.state for lga in self.lga_map.values())
+        facilities: list[FacilityRecord] = []
+        target_states = {lga.state for lga in self.lga_map.values()}
 
         # Filter for our 6 focal states and public primary level facilities
         subset = df[
@@ -145,7 +149,7 @@ class FacilityGenerator:
         ].copy()
 
         # Iterate over facilities and match to our 24 LGAs
-        facility_idx_by_lga: Dict[str, int] = {}
+        facility_idx_by_lga: dict[str, int] = {}
 
         for _, row in subset.iterrows():
             state = str(row.get("state", "")).strip()
@@ -306,14 +310,7 @@ class FacilityGenerator:
             if is_riverine:
                 gsm_penalty += 0.15
             gsm_score = round(
-                max(
-                    0.05,
-                    min(
-                        1.0,
-                        lga.telecom_coverage_rate - gsm_penalty + self.rng.uniform(-0.08, 0.08)
-                    )
-                ),
-                2
+                max(0.05, min(1.0, lga.telecom_coverage_rate - gsm_penalty + self.rng.uniform(-0.08, 0.08))), 2
             )
 
             # Baseline reporting probability
@@ -348,7 +345,7 @@ class FacilityGenerator:
                 gsm_connectivity_score=gsm_score,
                 baseline_reporting_prob=base_reporting,
                 nhfr_facility_code=nhfr_code if nhfr_code and nhfr_code.lower() != "nan" else None,
-                ownership=str(row.get("ownership", "Public"))
+                ownership=str(row.get("ownership", "Public")),
             )
             facilities.append(rec)
 

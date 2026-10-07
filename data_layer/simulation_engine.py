@@ -1,19 +1,24 @@
 import math
 import random
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
-from pathlib import Path
-import pandas as pd
-import numpy as np
 import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 if str(WORKSPACE_ROOT) not in sys.path:
     sys.path.insert(0, str(WORKSPACE_ROOT))
 
-from data_layer.real_indicators import get_lga_indicators_map
-from data_layer.facility_generator import FacilityRecord
-from data_layer.commodities import ESSENTIAL_COMMODITIES, CommoditySpec
+try:
+    from data_layer.commodities import ESSENTIAL_COMMODITIES, CommoditySpec
+    from data_layer.facility_generator import FacilityRecord
+    from data_layer.real_indicators import get_lga_indicators_map
+except ImportError:
+    from commodities import ESSENTIAL_COMMODITIES, CommoditySpec
+    from facility_generator import FacilityRecord
+    from real_indicators import get_lga_indicators_map
 
 
 @dataclass
@@ -39,10 +44,10 @@ class WeeklyCommodityEvent:
     # Reported Observation (What enters the Information System)
     report_submitted: bool  # Did the facility submit the weekly report?
     consecutive_reports_missed: int  # How many consecutive weeks has this facility gone silent?
-    reported_stock: Optional[float]
-    reported_consumption: Optional[float]
-    reported_days_stocked_out: Optional[int]
-    report_delay_days: Optional[int]  # Latency in transmission (2 to 24 days)
+    reported_stock: float | None
+    reported_consumption: float | None
+    reported_days_stocked_out: int | None
+    report_delay_days: int | None  # Latency in transmission (2 to 24 days)
 
 
 class StockSimulationEngine:
@@ -52,10 +57,10 @@ class StockSimulationEngine:
 
     def __init__(
         self,
-        facilities: List[FacilityRecord],
-        commodities: Optional[List[CommoditySpec]] = None,
+        facilities: list[FacilityRecord],
+        commodities: list[CommoditySpec] | None = None,
         num_weeks: int = 52,
-        seed: int = 101
+        seed: int = 101,
     ):
         self.facilities = facilities
         self.commodities = commodities or ESSENTIAL_COMMODITIES
@@ -66,7 +71,7 @@ class StockSimulationEngine:
         self.np_rng = np.random.default_rng(seed)
         self.lga_map = get_lga_indicators_map()
 
-    def _is_southern_region(self, facility: Optional[FacilityRecord]) -> bool:
+    def _is_southern_region(self, facility: FacilityRecord | None) -> bool:
         """
         Determines whether facility is in the south else, north
         South: South West (SW), South South (SS), South East (SE).
@@ -83,7 +88,7 @@ class StockSimulationEngine:
         return (lat < 8.0) if lat is not None else False
 
     def _calculate_seasonality_factor(
-        self, commodity: CommoditySpec, week: int, facility: Optional[FacilityRecord] = None
+        self, commodity: CommoditySpec, week: int, facility: FacilityRecord | None = None
     ) -> float:
         """
         Calculates seasonal surge factor for a given epidemiological week.
@@ -97,9 +102,9 @@ class StockSimulationEngine:
 
         2. Harmattan / Dry Season (Childhood Pneumonia/Amoxicillin, Measles Vaccine):
             a) South (SW, SS, SE): December to February (Weeks 49-52 and Weeks 1-8)
-                Milder, shorter, less intense — felt mainly Dec-Jan.
+                Milder, shorter, less intense - felt mainly Dec-Jan.
             b) North (NW, NE, NC): November to March (Weeks 45-52 and Weeks 1-13)
-                Earlier, longer, more severe — dry dusty winds from the Sahara.
+                Earlier, longer, more severe - dry dusty winds from the Sahara.
         """
         if commodity.seasonal_peak == "none":
             return 1.0
@@ -129,16 +134,16 @@ class StockSimulationEngine:
                         return 1.0 + (commodity.seasonal_multiplier - 1.0) * weight
                 return 1.0
 
-        #HARMATTAN OR DRY SEASON
+        # HARMATTAN OR DRY SEASON
         if commodity.seasonal_peak in ["harmattan", "dry"]:
             # Wrap around calendar year boundary end of year to start of the year
             rel_week = week - 52 if week >= 45 else week
 
             if is_south:
                 # South: December to February (Weeks 49-52 and 1-8)
-                # Milder, shorter, less intense — felt mainly Dec-Jan
+                # Milder, shorter, less intense - felt mainly Dec-Jan
                 if -3 <= rel_week <= 8:
-                    diff = abs(rel_week - 1) 
+                    diff = abs(rel_week - 1)
                     if diff < 6:
                         weight = 0.70 * math.cos((diff / 6.0) * (math.pi / 2.0))
                         return 1.0 + (commodity.seasonal_multiplier - 1.0) * weight
@@ -203,8 +208,7 @@ class StockSimulationEngine:
                     return False
             return scheduled
 
-    def _calculate_resupply_quantity(
-        self, facility: FacilityRecord, commodity: CommoditySpec, current_stock: float):
+    def _calculate_resupply_quantity(self, facility: FacilityRecord, commodity: CommoditySpec, current_stock: float):
         """
         Calculates resupply replenishment amount.
         Accounts for order fulfillment quotas and central depot constraints.
@@ -239,16 +243,16 @@ class StockSimulationEngine:
             DataFrame of all weekly events
             Summary dictionary of latest facility states (Week 52)
         """
-        records: List[WeeklyCommodityEvent] = []
+        records: list[WeeklyCommodityEvent] = []
 
         # Track facility-level running state
         # facility_id: { consecutive_misses: int, current_stock: {commodity_id: float} }
-        state_tracker: Dict[str, Dict] = {}
+        state_tracker: dict[str, dict] = {}
 
         for facility in self.facilities:
             state_tracker[facility.facility_id] = {
                 "consecutive_misses": 0,
-                "current_stock": {c.commodity_id: self._initial_stock_level(facility, c) for c in self.commodities}
+                "current_stock": {c.commodity_id: self._initial_stock_level(facility, c) for c in self.commodities},
             }
 
         # Step through weeks 1 to num_weeks
@@ -323,16 +327,15 @@ class StockSimulationEngine:
                         is_stockout = True
                         if actual_demand > 0:
                             fraction_served = beg_stock / actual_demand
-                            days_stocked_out = min(7, max(1, int(round((1.0 - fraction_served) * 7))))
+                            days_stocked_out = min(7, max(1, round((1.0 - fraction_served) * 7)))
                         else:
                             days_stocked_out = 7
 
                     resupply_amount = 0.0
-                    if is_resupply:
-                        if not (commodity.requires_cold_chain and not facility.has_cold_chain):
-                            resupply_amount = self._calculate_resupply_quantity(
-                                facility=facility, commodity=commodity, current_stock=ending_before_resupply
-                            )
+                    if is_resupply and not (commodity.requires_cold_chain and not facility.has_cold_chain):
+                        resupply_amount = self._calculate_resupply_quantity(
+                            facility=facility, commodity=commodity, current_stock=ending_before_resupply
+                        )
 
                     ending_stock = round(ending_before_resupply + resupply_amount, 1)
                     f_state["current_stock"][commodity.commodity_id] = ending_stock
@@ -368,14 +371,14 @@ class StockSimulationEngine:
                         reported_stock=rep_stock,
                         reported_consumption=rep_consumption,
                         reported_days_stocked_out=rep_stockout_days,
-                        report_delay_days=delay_days
+                        report_delay_days=delay_days,
                     )
                     records.append(event)
 
         df = pd.DataFrame([r.__dict__ for r in records])
         return df, state_tracker
 
-    def export_dataset(self, output_path: Optional[Path] = None, save_to_disk: bool = False):
+    def export_dataset(self, output_path: Path | None = None, save_to_disk: bool = False):
         df, _ = self.run_simulation()
         if save_to_disk and output_path is not None:
             output_path.parent.mkdir(parents=True, exist_ok=True)

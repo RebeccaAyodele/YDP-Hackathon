@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS facilities CASCADE;
 DROP TABLE IF EXISTS nigeria_lga_indicators CASCADE;
 DROP TABLE IF EXISTS essential_commodities CASCADE;
 
--- 1. Nigeria LGA Indicators
+---- Nigeria LGA Indicators
 CREATE TABLE IF NOT EXISTS nigeria_lga_indicators (
     lga_id TEXT PRIMARY KEY,
     lga_name TEXT NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS nigeria_lga_indicators (
     telecom_coverage_rate DOUBLE PRECISION NOT NULL
 );
 
--- 2. Essential Commodities Catalog
+-- Essential Commodities Catalog
 CREATE TABLE IF NOT EXISTS essential_commodities (
     commodity_id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS essential_commodities (
     description TEXT
 );
 
--- 3. Facilities Registry
+-- Facilities Registry
 CREATE TABLE IF NOT EXISTS facilities (
     facility_id TEXT PRIMARY KEY,
     facility_name TEXT NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS facilities (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Facility Risk Features
+--Facility Risk Features
 CREATE TABLE IF NOT EXISTS facility_features (
     facility_id TEXT PRIMARY KEY REFERENCES facilities(facility_id) ON DELETE CASCADE,
     facility_name TEXT NOT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS facility_features (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. Facility Graph Edges
+--facility Graph Edges
 CREATE TABLE IF NOT EXISTS facility_graph_edges (
     source_facility_id TEXT NOT NULL REFERENCES facilities(facility_id) ON DELETE CASCADE,
     target_facility_id TEXT NOT NULL REFERENCES facilities(facility_id) ON DELETE CASCADE,
@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS facility_graph_edges (
     PRIMARY KEY (source_facility_id, target_facility_id)
 );
 
--- 6. Weekly Stock Reports
+--weekly Stock Reports
 CREATE TABLE IF NOT EXISTS weekly_stock_reports (
     id BIGSERIAL PRIMARY KEY,
     facility_id TEXT NOT NULL REFERENCES facilities(facility_id) ON DELETE CASCADE,
@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS weekly_stock_reports (
     report_delay_days DOUBLE PRECISION
 );
 
--- Indexes for performance
+-- Indexes on PK or frequently used fields
 CREATE INDEX IF NOT EXISTS idx_fac_state_zone ON facilities(state, geopolitical_zone);
 CREATE INDEX IF NOT EXISTS idx_fac_lga ON facilities(lga_id);
 CREATE INDEX IF NOT EXISTS idx_fac_coords ON facilities(latitude, longitude);
@@ -177,7 +177,7 @@ CREATE INDEX IF NOT EXISTS idx_feat_lga ON facility_features(lga_id);
 CREATE INDEX IF NOT EXISTS idx_edge_src ON facility_graph_edges(source_facility_id);
 CREATE INDEX IF NOT EXISTS idx_edge_tgt ON facility_graph_edges(target_facility_id);
 
--- Row Level Security
+----- Row Level Security
 ALTER TABLE facilities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE facility_features ENABLE ROW LEVEL SECURITY;
 ALTER TABLE facility_graph_edges ENABLE ROW LEVEL SECURITY;

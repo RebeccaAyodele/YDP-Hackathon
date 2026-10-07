@@ -1,20 +1,34 @@
-import sys
 import json
+import sys
 from pathlib import Path
+
 import pandas as pd
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 DATA_LAYER_DIR = Path(__file__).resolve().parent
 if str(WORKSPACE_ROOT) not in sys.path:
     sys.path.insert(0, str(WORKSPACE_ROOT))
+if str(DATA_LAYER_DIR) not in sys.path:
+    sys.path.insert(0, str(DATA_LAYER_DIR))
 
-from data_layer.real_indicators import save_raw_indicators, NIGERIA_LGA_DATA
-from data_layer.commodities import ESSENTIAL_COMMODITIES
-from data_layer.facility_generator import FacilityGenerator
-from data_layer.simulation_engine import StockSimulationEngine
-from data_layer.network_builder import FacilityNetworkBuilder
-from data_layer.feature_extractor import FacilityFeatureExtractor
-from data_layer.db.load_to_db import init_and_load_db
+try:
+    from data_layer.commodities import ESSENTIAL_COMMODITIES
+    from data_layer.db.load_to_db import init_and_load_db
+    from data_layer.facility_generator import FacilityGenerator
+    from data_layer.feature_extractor import FacilityFeatureExtractor
+    from data_layer.network_builder import FacilityNetworkBuilder
+    from data_layer.real_indicators import NIGERIA_LGA_DATA, save_raw_indicators
+    from data_layer.risk_engine import run_risk_engine
+    from data_layer.simulation_engine import StockSimulationEngine
+except ImportError:
+    from commodities import ESSENTIAL_COMMODITIES
+    from db.load_to_db import init_and_load_db
+    from facility_generator import FacilityGenerator
+    from feature_extractor import FacilityFeatureExtractor
+    from network_builder import FacilityNetworkBuilder
+    from real_indicators import NIGERIA_LGA_DATA, save_raw_indicators
+    from risk_engine import run_risk_engine
+    from simulation_engine import StockSimulationEngine
 
 
 def run_pipeline():
@@ -27,7 +41,7 @@ def run_pipeline():
     processed_dir.mkdir(parents=True, exist_ok=True)
 
     # Raw Indicators & Commodities Catalog
-    print("\nExporting Real Public Health Baseline Indicators.......")
+    print("\nExporting Real Public Health Baseline Indicators")
     raw_lga_path = raw_dir / "nigeria_lga_indicators.json"
     save_raw_indicators(raw_lga_path)
     print(f"Saved {len(NIGERIA_LGA_DATA)} LGAs with NDHS/NBS/WHO priors to {raw_lga_path.name}")
@@ -37,7 +51,7 @@ def run_pipeline():
     print(f"Saved {len(ESSENTIAL_COMMODITIES)} essential commodities to {commodities_path.name}")
 
     # Facility Registry Generation
-    print("\nGenerating Calibrated Facility Registry.....")
+    print("\nGenerating Calibrated Facility Registry")
     generator = FacilityGenerator(seed=42)
     facilities = generator.export_to_json(processed_dir / "facilities.json")
     facilities_df = pd.DataFrame([f.__dict__ for f in facilities])
@@ -50,10 +64,12 @@ def run_pipeline():
     print(f"Primary Health Clinics: {(facilities_df['facility_type'] == 'Primary Health Clinic').sum()}")
     print(f"Health Posts: {(facilities_df['facility_type'] == 'Health Post').sum()}")
     print(f"Rural facilities: {facilities_df['is_rural'].sum()} ({facilities_df['is_rural'].mean():.1%})")
-    print(f"Cold-chain equipped: {facilities_df['has_cold_chain'].sum()} ({facilities_df['has_cold_chain'].mean():.1%})")
+    print(
+        f"Cold-chain equipped: {facilities_df['has_cold_chain'].sum()} ({facilities_df['has_cold_chain'].mean():.1%})"
+    )
 
     # Mechanistic Simulation (52 Weeks)
-    print("\nRunning Mechanistic Simulation (52 Weeks)........")
+    print("\nRunning Mechanistic Simulation (52 Weeks)")
     sim_engine = StockSimulationEngine(facilities=facilities, commodities=ESSENTIAL_COMMODITIES, num_weeks=52, seed=101)
     sim_df = sim_engine.export_dataset()
     sim_df.to_parquet(processed_dir / "weekly_stock_reports.parquet", index=False)
@@ -72,17 +88,25 @@ def run_pipeline():
     print(f"Constructed spatial graph with {len(edges)} directed edges (k=3 neighbors per facility).")
 
     # Feature Extraction Pipeline
-    print("\nExtracting Feature Matrix for Risk Triage...")
+    print("\nExtracting Feature Matrix for Risk Triage")
     feature_extractor = FacilityFeatureExtractor(facilities, sim_df, eval_week=52)
     feat_df = feature_extractor.extract_features()
     feat_df.to_parquet(processed_dir / "facility_features.parquet", index=False)
     print(f"Saved {len(feat_df)} facility feature rows to {processed_dir.name}/facility_features.parquet")
 
+    # Risk Engine: Gradient-Boosted ML Triage & Spatial Cascading Propagation
+    print("\nExecuting Risk Engine (ML Risk Scoring & Spatial Cascading Propagation)")
+    run_risk_engine(
+        features_path=processed_dir / "facility_features.parquet",
+        edges_path=processed_dir / "facility_graph_edges.json",
+        output_dir=processed_dir,
+    )
+
     # Database Ingestion: Supabase db
-    print("\nIngesting All Datasets Directly into Supabase Database............")
+    print("\nIngesting All Datasets Directly into Supabase Database")
     init_and_load_db(facilities_df=facilities_df, feat_df=feat_df, sim_df=sim_df, edges_data=edges)
 
-    #quick check on data
+    # quick check on data
     print("\nANALYTICAL VALIDATION: CORE INSIGHT VERIFICATION")
 
     silent_facilities = feat_df[feat_df["weeks_since_last_report"] >= 3]
@@ -114,3 +138,8 @@ def run_pipeline():
     )
 
     print("\nDATA LAYER BUILD AND SUPABASE INGESTION SUCCESSFUL")
+    return facilities_df, feat_df, sim_df, edges
+
+
+if __name__ == "__main__":
+    run_pipeline()

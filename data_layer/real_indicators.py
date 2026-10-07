@@ -1,6 +1,5 @@
 import json
 from dataclasses import dataclass
-from typing import Dict, List
 from pathlib import Path
 
 
@@ -23,97 +22,33 @@ class LGAContext:
     telecom_coverage_rate: float  # Mobile/GSM reporting connectivity (0.0 to 1.0)
 
 
+# GEO POLITICAL ANDSTATE MPI are just for reference sake, it is not used in the simulation
 # National Bureau of Statistics (NBS) 2022 Multidimensional Poverty Index (MPI) by Geopolitical Zone
-GEOPOLITICAL_ZONE_MPI_2022: Dict[str, Dict] = {
-    "National": {
-        "mpi": 0.257,
-        "incidence_h": 0.629,
-        "intensity_a": 0.409,
-        "poor_people_million": 132.92,
-    },
-    "North Central": {
-        "mpi": 0.272,
-        "incidence_h": 0.663,
-        "intensity_a": 0.410,
-        "poor_people_million": 20.19,
-    },
-    "North East": {
-        "mpi": 0.324,
-        "incidence_h": 0.765,
-        "intensity_a": 0.424,
-        "poor_people_million": 20.47,
-    },
-    "North West": {
-        "mpi": 0.324,
-        "incidence_h": 0.758,
-        "intensity_a": 0.427,
-        "poor_people_million": 45.49,
-    },
-    "South East": {
-        "mpi": 0.183,
-        "incidence_h": 0.490,
-        "intensity_a": 0.373,
-        "poor_people_million": 10.85,
-    },
-    "South South": {
-        "mpi": 0.250,
-        "incidence_h": 0.626,
-        "intensity_a": 0.398,
-        "poor_people_million": 19.66,
-    },
-    "South West": {
-        "mpi": 0.151,
-        "incidence_h": 0.400,
-        "intensity_a": 0.377,
-        "poor_people_million": 16.27,
-    },
+GEOPOLITICAL_ZONE_MPI_2022: dict[str, dict] = {
+    "National": {"mpi": 0.257, "incidence_h": 0.629, "intensity_a": 0.409, "poor_people_million": 132.92},
+    "North Central": {"mpi": 0.272, "incidence_h": 0.663, "intensity_a": 0.410, "poor_people_million": 20.19},
+    "North East": {"mpi": 0.324, "incidence_h": 0.765, "intensity_a": 0.424, "poor_people_million": 20.47},
+    "North West": {"mpi": 0.324, "incidence_h": 0.758, "intensity_a": 0.427, "poor_people_million": 45.49},
+    "South East": {"mpi": 0.183, "incidence_h": 0.490, "intensity_a": 0.373, "poor_people_million": 10.85},
+    "South South": {"mpi": 0.250, "incidence_h": 0.626, "intensity_a": 0.398, "poor_people_million": 19.66},
+    "South West": {"mpi": 0.151, "incidence_h": 0.400, "intensity_a": 0.377, "poor_people_million": 16.27},
 }
 
 # NBS 2022 Multidimensional Poverty Index (MPI) for Selected Focal States
-STATE_MPI_2022: Dict[str, Dict] = {
-    "Lagos": {
-        "mpi": 0.026,
-        "incidence_h": 0.059,
-        "intensity_a": 0.443,
-        "classification": "Least poor",
-    },
-    "Plateau": {
-        "mpi": 0.259,
-        "incidence_h": 0.556,
-        "intensity_a": 0.466,
-        "classification": "Moderately poor",
-    },
-    "Bayelsa": {
-        "mpi": 0.186,
-        "incidence_h": 0.406,
-        "intensity_a": 0.458,
-        "classification": "Moderately poor",
-    },
-    "Ebonyi": {
-        "mpi": 0.380,
-        "incidence_h": 0.730,
-        "intensity_a": 0.521,
-        "classification": "Very poor",
-    },
-    "Sokoto": {
-        "mpi": 0.536,
-        "incidence_h": 0.879,
-        "intensity_a": 0.610,
-        "classification": "Extremely poor",
-    },
-    "Yobe": {
-        "mpi": 0.562,
-        "incidence_h": 0.895,
-        "intensity_a": 0.628,
-        "classification": "Extremely poor",
-    },
+STATE_MPI_2022: dict[str, dict] = {
+    "Lagos": {"mpi": 0.026, "incidence_h": 0.059, "intensity_a": 0.443, "classification": "Least poor"},
+    "Plateau": {"mpi": 0.259, "incidence_h": 0.556, "intensity_a": 0.466, "classification": "Moderately poor"},
+    "Bayelsa": {"mpi": 0.186, "incidence_h": 0.406, "intensity_a": 0.458, "classification": "Moderately poor"},
+    "Ebonyi": {"mpi": 0.380, "incidence_h": 0.730, "intensity_a": 0.521, "classification": "Very poor"},
+    "Sokoto": {"mpi": 0.536, "incidence_h": 0.879, "intensity_a": 0.610, "classification": "Extremely poor"},
+    "Yobe": {"mpi": 0.562, "incidence_h": 0.895, "intensity_a": 0.628, "classification": "Extremely poor"},
 }
 
 
 # Baseline indicators for 24 focal LGAs across 6 geopolitical zones
 # poverty_headcount_mpi models the NBS 2022 MPI values
-NIGERIA_LGA_DATA: List[Dict] = [
-    #southwest
+NIGERIA_LGA_DATA: list[dict] = [
+    # southwest
     {
         "lga_id": "lagos_ikeja",
         "lga_name": "Ikeja",
@@ -182,7 +117,7 @@ NIGERIA_LGA_DATA: List[Dict] = [
         "road_access_index": 0.65,
         "telecom_coverage_rate": 0.86,
     },
-    #north west
+    # north west
     {
         "lga_id": "sokoto_south",
         "lga_name": "Sokoto South",
@@ -251,7 +186,7 @@ NIGERIA_LGA_DATA: List[Dict] = [
         "road_access_index": 0.42,
         "telecom_coverage_rate": 0.56,
     },
-    #north east
+    # north east
     {
         "lga_id": "yobe_damaturu",
         "lga_name": "Damaturu",
@@ -389,7 +324,7 @@ NIGERIA_LGA_DATA: List[Dict] = [
         "road_access_index": 0.14,
         "telecom_coverage_rate": 0.38,
     },
-    #South East
+    # South East
     {
         "lga_id": "ebonyi_abakaliki",
         "lga_name": "Abakaliki",
@@ -458,7 +393,7 @@ NIGERIA_LGA_DATA: List[Dict] = [
         "road_access_index": 0.38,
         "telecom_coverage_rate": 0.55,
     },
-    #NORTH CENTRAL
+    # NORTH CENTRAL
     {
         "lga_id": "plateau_jos_north",
         "lga_name": "Jos North",
@@ -526,11 +461,11 @@ NIGERIA_LGA_DATA: List[Dict] = [
         "cholera_risk_score": 0.50,
         "road_access_index": 0.38,
         "telecom_coverage_rate": 0.58,
-    }
+    },
 ]
 
 
-def get_lga_indicators_map() -> Dict[str, LGAContext]:
+def get_lga_indicators_map() -> dict[str, LGAContext]:
     """Returns a dictionary mapping lga_id to LGAContext."""
     return {item["lga_id"]: LGAContext(**item) for item in NIGERIA_LGA_DATA}
 
