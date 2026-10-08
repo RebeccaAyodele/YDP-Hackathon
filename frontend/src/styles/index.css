@@ -1,33 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
 :root {
-  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Color Palette */
-  --bg-primary: #0a0f1d;
-  --bg-secondary: #111827;
-  --bg-card: rgba(17, 24, 39, 0.85);
-  --bg-card-hover: rgba(31, 41, 55, 0.9);
-  --bg-glass: rgba(15, 23, 42, 0.75);
+  /* Pure Electric Blue & Monochromatic Clean White */
+  --blue-primary: #0052FF;
+  --blue-hover: #0045D8;
+  --blue-subtle: #F0F5FF;
+  --blue-border: #D0E1FD;
 
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-highlight: rgba(16, 185, 129, 0.3);
+  /* Neutral Surfaces */
+  --bg-app: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-hover: #F1F5F9;
+  --bg-subtle: #F8FAFC;
 
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  /* Clean Borders */
+  --border-light: #E2E8F0;
+  --border-medium: #CBD5E1;
 
-  /* Accent & Risk Levels */
-  --emerald-500: #10b981;
-  --emerald-400: #34d399;
-  --emerald-glow: rgba(16, 185, 129, 0.2);
+  /* Clean High-Contrast Neutral Text */
+  --text-primary: #0F172A;
+  --text-body: #334155;
+  --text-muted: #64748B;
+  --text-subtle: #94A3B8;
 
-  --risk-low: #10b981;
-  --risk-medium: #f59e0b;
-  --risk-high: #ef4444;
-  --risk-critical: #dc2626;
-
-  --accent-cyan: #06b6d4;
-  --accent-purple: #8b5cf6;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
 }
 
 * {
@@ -38,107 +38,188 @@
 
 body {
   font-family: var(--font-main);
-  background-color: var(--bg-primary);
+  background-color: var(--bg-app);
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Scrollbars */
+/* Custom Minimalist Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: #E2E8F0;
   border-radius: 4px;
 }
+::-webkit-scrollbar-thumb:hover {
+  background: #CBD5E1;
+}
 
-/* Layout Utilities */
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-color: var(--bg-app);
 }
 
-.glass-panel {
-  background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+/* Minimalist Clean Cards */
+.panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
 }
 
-.badge {
+.panel-row {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  transition: all 0.12s ease;
+}
+
+.panel-row:hover {
+  border-color: var(--border-medium);
+  background: #FAFAFA;
+}
+
+.panel-row-selected {
+  background: #FFFFFF !important;
+  border: 1.5px solid var(--blue-primary) !important;
+  box-shadow: 0 0 0 1px var(--blue-primary);
+}
+
+/* Monochromatic Clean Badges (No Rainbow Colors) */
+.badge-clean {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #F1F5F9;
+  color: var(--text-body);
+  border: 1px solid var(--border-light);
+}
+
+.badge-blue {
+  background: var(--blue-subtle);
+  color: var(--blue-primary);
+  border: 1px solid var(--blue-border);
+}
+
+.badge-green {
+  background: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #BBF7D0;
+}
+
+.badge-red {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.badge-amber {
+  background: #FFFBEB;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+}
+
+.badge-dark {
+  background: #0F172A;
+  color: #FFFFFF;
+  border: 1px solid #0F172A;
+}
+
+/* Tabs */
+.tab-btn {
+  padding: 8px 14px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.12s ease;
 }
 
-.badge-low {
-  background: rgba(16, 185, 129, 0.15);
-  color: var(--risk-low);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+.tab-btn:hover {
+  color: var(--text-primary);
 }
 
-.badge-medium {
-  background: rgba(245, 158, 11, 0.15);
-  color: var(--risk-medium);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+.tab-btn-active {
+  color: var(--blue-primary) !important;
+  border-bottom-color: var(--blue-primary) !important;
 }
 
-.badge-high {
-  background: rgba(239, 68, 68, 0.15);
-  color: var(--risk-high);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.12s ease;
 }
 
-.badge-critical {
-  background: rgba(220, 38, 38, 0.25);
-  color: #f87171;
-  border: 1px solid rgba(220, 38, 38, 0.5);
-  animation: pulse-border 2s infinite ease-in-out;
+.btn-primary {
+  background: var(--blue-primary);
+  color: #FFFFFF;
 }
 
-@keyframes pulse-border {
-  0%, 100% { border-color: rgba(220, 38, 38, 0.4); }
-  50% { border-color: rgba(220, 38, 38, 0.9); box-shadow: 0 0 10px rgba(220, 38, 38, 0.3); }
+.btn-primary:hover {
+  background: var(--blue-hover);
 }
 
-/* Leaflet Map Performance Customizations */
-.leaflet-container {
-  background: #0f172a !important;
-  font-family: var(--font-main) !important;
-  contain: layout paint size;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+.btn-outline {
+  background: #FFFFFF;
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
 }
 
-.leaflet-tile-container img {
-  will-change: transform;
+.btn-outline:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-medium);
 }
 
-.leaflet-pane > canvas {
-  will-change: transform;
-  transform: translateZ(0);
+.btn-outline:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.leaflet-popup-content-wrapper {
-  background: #ffffff !important;
-  color: #0f172a !important;
-  border-radius: 8px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4) !important;
+/* Form Inputs */
+.input-clean {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 7px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.12s ease;
 }
 
-.leaflet-popup-tip {
-  background: #ffffff !important;
+.input-clean:focus {
+  border-color: var(--blue-primary);
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
