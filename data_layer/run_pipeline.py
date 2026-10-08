@@ -75,6 +75,25 @@ def run_pipeline():
     sim_df.to_parquet(processed_dir / "weekly_stock_reports.parquet", index=False)
     print(f"Saved {len(sim_df):,} records to {processed_dir.name}/weekly_stock_reports.parquet")
 
+    # Export latest week (Week 52) inventory status per facility for API services
+    w52 = sim_df[sim_df["week_number"] == 52]
+    inv_by_fac = {}
+    for fid, group in w52.groupby("facility_id"):
+        inv_by_fac[fid] = [{
+            "commodity_id": row["commodity_id"],
+            "name": row["commodity_name"],
+            "requires_cold_chain": bool(row["requires_cold_chain"]),
+            "ending_stock": float(row["ending_stock"]),
+            "actual_consumption": float(row["actual_consumption"]),
+            "is_stockout": bool(row["is_stockout"]),
+            "days_stocked_out": int(row["days_stocked_out"]),
+            "unmet_demand": float(row["unmet_demand"]),
+            "cold_chain_breach": bool(row["cold_chain_breach"])
+        } for _, row in group.iterrows()]
+    with open(processed_dir / "facility_latest_inventory.json", "w", encoding="utf-8") as f:
+        json.dump(inv_by_fac, f, indent=2)
+    print(f"Saved Week 52 inventory snapshot for {len(inv_by_fac)} facilities to {processed_dir.name}/facility_latest_inventory.json")
+
     # Simulation Sanity Diagnostics
     reporting_rate = sim_df["report_submitted"].mean()
     stockout_rate = sim_df["is_stockout"].mean()
@@ -92,7 +111,8 @@ def run_pipeline():
     feature_extractor = FacilityFeatureExtractor(facilities, sim_df, eval_week=52)
     feat_df = feature_extractor.extract_features()
     feat_df.to_parquet(processed_dir / "facility_features.parquet", index=False)
-    print(f"Saved {len(feat_df)} facility feature rows to {processed_dir.name}/facility_features.parquet")
+    feat_df.to_json(processed_dir / "facility_features.json", orient="records", indent=2)
+    print(f"Saved {len(feat_df)} facility feature rows to {processed_dir.name}/facility_features.parquet and .json")
 
     # Risk Engine: Gradient-Boosted ML Triage & Spatial Cascading Propagation
     print("\nExecuting Risk Engine (ML Risk Scoring & Spatial Cascading Propagation)...")
