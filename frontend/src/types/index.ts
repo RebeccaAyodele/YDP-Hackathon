@@ -45,6 +45,12 @@ export interface Facility {
   is_hidden_risk?: boolean;
   risk_tier: RiskTier;
   is_silent: boolean;
+  weeks_since_last_report?: number;
+  ground_truth_stockout_count?: number;
+  ground_truth_stockout_any?: number;
+  ground_truth_critical_stockout?: number;
+  reporting_completeness_4w?: number;
+  estimated_effective_stock_weeks?: number;
   top_reason_summary: string;
   detailed_reasons: string[];
   risk_factors: RiskFactor[];
@@ -120,4 +126,67 @@ export interface CascadingSimulationResponse {
     jumped_to_critical: boolean;
   }>;
   total_facilities_destabilized: number;
+}
+
+export interface CommodityStockoutStat {
+  commodity_id: string;
+  name: string;
+  category: string;
+  stockout_facilities: number;
+  total_facilities: number;
+  stockout_rate_pct: number;
+  avg_days_stocked_out: number;
+  total_unmet_demand: number;
+  cold_chain_breaches: number;
+}
+
+export interface LGAVulnerabilityStat {
+  lga_name: string;
+  state: string;
+  zone: string;
+  facility_count: number;
+  avg_risk_score: number;
+  stockout_rate_pct: number;
+  poverty_mpi_pct: number;
+  immunization_rate_pct: number;
+  under5_mortality: number;
+}
+
+export interface ReportingLatencyBucket {
+  bucket: string;
+  count: number;
+  percentage: number;
+}
+
+export interface FacilityTypeBreakdownStat {
+  facility_type: string;
+  full_type: string;
+  count: number;
+  avg_staff: number;
+  avg_nurses: number;
+  avg_chews: number;
+  cold_chain_pct: number;
+  solar_pct: number;
+  water_pct: number;
+}
+
+export interface StateComparisonStat {
+  state: string;
+  zone: string;
+  facility_count: number;
+  avg_risk: number;
+  critical_count: number;
+  silent_count: number;
+  cold_chain_pct: number;
+  avg_staff: number;
+}
+
+export interface DatasetAnalyticsResponse {
+  total_facilities: number;
+  scope: string;
+  commodity_stockouts: CommodityStockoutStat[];
+  lga_vulnerability: LGAVulnerabilityStat[];
+  reporting_latency_distribution: ReportingLatencyBucket[];
+  facility_type_breakdown: FacilityTypeBreakdownStat[];
+  state_comparison: StateComparisonStat[];
 }
