@@ -22,7 +22,6 @@ if str(DATA_LAYER_DIR) not in sys.path:
 PROCESSED_DIR = DATA_LAYER_DIR / "data" / "processed"
 MODEL_DIR = DATA_LAYER_DIR / "data" / "models"
 
-# 26 Core Predictor Features mapped from PHC Pulse Guide Section 4.1
 FEATURE_COLUMNS = [
     # Reporting dynamics (silence treated as primary signal)
     "weeks_since_last_report",
@@ -114,10 +113,7 @@ def determine_risk_tier(score: float) -> str:
 
 
 def generate_explainable_reasons(row: pd.Series | dict[str, Any]) -> tuple[str, list[str], list[RiskFactorDetail]]:
-    """
-    Builds human-readable explanations and prioritized risk factor breakdowns
-    from raw facility indicators (PHC Pulse Guide Section 4.3).
-    """
+    """Generates human-readable reasons and risk factor breakdowns for a facility."""
     reasons: list[str] = []
     factors: list[RiskFactorDetail] = []
 
@@ -255,13 +251,7 @@ def generate_explainable_reasons(row: pd.Series | dict[str, Any]) -> tuple[str, 
 
 
 class RiskEngine:
-    """
-    Core Machine Learning & Spatial Cascading Risk Engine.
-
-    Combines:
-    Scikit-Learn GradientBoostingRegressor for calibrated base risk scoring.
-    Multi-hop spatial network propagation for cascading overflow risk.
-    """
+    """Machine learning and spatial cascading risk scoring engine."""
 
     def __init__(self, random_state: int = 42):
         self.random_state = random_state
@@ -271,10 +261,7 @@ class RiskEngine:
         self.feature_importances_: dict[str, float] = {}
 
     def fit(self, features_df: pd.DataFrame) -> dict[str, float]:
-        """
-        Fits a Gradient Boosting model on facility features.
-        Predicts continuous ground truth risk score (0-100).
-        """
+        """Fits a gradient boosting model on facility features to predict risk scores (0-100)."""
         missing_cols = [c for c in self.feature_names if c not in features_df.columns]
         if missing_cols:
             raise ValueError(f"Features DataFrame is missing required columns: {missing_cols}")
@@ -309,7 +296,7 @@ class RiskEngine:
         return {"mae": mae, "r2": r2}
 
     def predict_base_scores(self, features_df: pd.DataFrame) -> np.ndarray:
-        "Computes ase risk scores (0.0 to 100.0) for a batch of facilities."
+        """Computes base risk scores (0.0 to 100.0) for a batch of facilities."""
         if not self.is_fitted or self.model is None:
             raise RuntimeError("RiskEngine model has not been fitted or loaded yet. Call fit() first.")
 
@@ -326,15 +313,7 @@ class RiskEngine:
         hop1_weight: float = 0.35,
         hop2_weight: float = 0.18,
     ) -> pd.DataFrame:
-        """
-        Propagates patient redirection stress across the facility network (PHC Pulse Guide Section 5).
-
-        When a facility runs short of stock or staff, patients travel to neighboring facilities.
-        This function:
-        1. Distributes Hop 1 stress from each source facility to its directed neighbors using overflow_weight.
-        2. Distributes Hop 2 secondary stress outward from Hop 1 receivers.
-        3. Computes adjusted_cascading_score and flags 'is_hidden_risk' facilities.
-        """
+        """Propagates patient redirection stress across the facility network to compute cascading risk scores."""
         df = facilities_df.copy()
         if "base_risk_score" not in df.columns:
             df["base_risk_score"] = self.predict_base_scores(df)
@@ -415,12 +394,7 @@ class RiskEngine:
         features_df: pd.DataFrame,
         edges_data: pd.DataFrame | list[dict],
     ) -> list[FacilityRiskResult]:
-        """
-        Runs full pipeline:
-        1. Predicts base scores
-        2. Applies spatial cascading propagation
-        3. Formats explainable reasons and risk factor breakdowns
-        """
+        """Evaluates facilities by predicting base scores, propagating network risk, and generating explainable factors."""
         if not self.is_fitted:
             self.fit(features_df)
 
@@ -482,10 +456,7 @@ class RiskEngine:
         scored_results: list[FacilityRiskResult] | None = None,
         edges_data: list[dict] | None = None,
     ) -> dict[str, Any]:
-        """
-        Simulates an exogenous supply or staffing shock at a specific facility and tracks
-        its multi-hop propagation across adjacent primary healthcare centers.
-        """
+        """Simulates a supply or staffing shock at a facility and tracks its network propagation."""
         if scored_results is None or edges_data is None:
             raise ValueError("scored_results and edges_data must be provided for shock simulation.")
 
@@ -613,13 +584,46 @@ def run_risk_engine(
     features_path: Path | None = None,
     edges_path: Path | None = None,
     output_dir: Path | None = None,
+    force_recompute: bool = False,
 ) -> tuple[pd.DataFrame, list[FacilityRiskResult]]:
-    """
-    Convenience entrypoint to execute the Risk Engine end-to-end on data layer files.
-    """
+    """Runs the risk engine on processed feature and network graph files."""
     feat_file = features_path or PROCESSED_DIR / "facility_features.parquet"
     edge_file = edges_path or PROCESSED_DIR / "facility_graph_edges.json"
     out_dir = output_dir or PROCESSED_DIR
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    parquet_out = out_dir / "facility_risk_scores.parquet"
+    json_out = out_dir / "facility_risk_scores.json"
+    model_file = MODEL_DIR / "risk_scoring_model.joblib"
+
+    if not force_recompute and parquet_out.exists() and json_out.exists() and model_file.exists():
+        print("\nPHC PULSE RISK ENGINE")
+        print(f"[RiskEngine] Existing model and risk profiles found at {parquet_out.name} and {model_file.name}.")
+        print("Loading existing scored profiles from disk (use force_recompute=True to force re-computation)...")
+        flat_df = pd.read_parquet(parquet_out)
+        with open(json_out, "r", encoding="utf-8") as f:
+            results_records = json.load(f)
+        results = []
+        for r in results_records:
+            r_copy = dict(r)
+            if "risk_factors" in r_copy and isinstance(r_copy["risk_factors"], list):
+                r_copy["risk_factors"] = [
+                    RiskFactorDetail(**rf) if isinstance(rf, dict) else rf for rf in r_copy["risk_factors"]
+                ]
+            results.append(FacilityRiskResult(**r_copy))
+
+        critical_count = sum(1 for r in results if r.risk_tier == "CRITICAL")
+        high_count = sum(1 for r in results if r.risk_tier == "HIGH")
+        hidden_count = sum(1 for r in results if r.is_hidden_risk)
+        silent_count = sum(1 for r in results if r.is_silent)
+
+        print("\nTriage Summary (Cached):")
+        print(f"Critical Risk: {critical_count} ({critical_count / len(results):.1%})")
+        print(f"High Risk:     {high_count} ({high_count / len(results):.1%})")
+        print(f"Hidden Risk:   {hidden_count} facilities (isolated score low, but neighbor strain pushes into danger)")
+        print(f"Silent:        {silent_count} facilities (>= 3 weeks reporting gap)")
+
+        return flat_df, results
 
     print("\nPHC PULSE RISK ENGINE")
     print(f"Loading feature matrix from {feat_file.name}")
@@ -645,10 +649,6 @@ def run_risk_engine(
     results_df = pd.DataFrame(results_records)
 
     # Export to Parquet and JSON
-    out_dir.mkdir(parents=True, exist_ok=True)
-    parquet_out = out_dir / "facility_risk_scores.parquet"
-    json_out = out_dir / "facility_risk_scores.json"
-
     # For parquet, serialize nested lists/dicts to strings or flatten
     flat_df = results_df.copy()
     flat_df["detailed_reasons"] = flat_df["detailed_reasons"].apply(json.dumps)
@@ -680,4 +680,14 @@ def run_risk_engine(
 
 
 if __name__ == "__main__":
-    run_risk_engine()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="PHC Pulse Risk Engine")
+    parser.add_argument(
+        "--force",
+        "-f",
+        action="store_true",
+        help="Force re-fitting and re-scoring even if existing results exist.",
+    )
+    args = parser.parse_args()
+    run_risk_engine(force_recompute=args.force)

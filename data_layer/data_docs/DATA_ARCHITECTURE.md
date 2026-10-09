@@ -43,22 +43,28 @@ This document details the **data layer**, explaining what each file in the data 
 ## 2. Pipeline Execution & Script Roles
 
 ### `run_pipeline.py` (Data Layer Entrypoint)
-- **Role**: Primary execution script for running the complete end-to-end data pipeline.
+- **Role**: Primary execution script for running the complete end-to-end data pipeline with automatic file-existence caching.
 - **Location**: `data_layer/run_pipeline.py`.
 - **Execution**:
   ```bash
+  # Standard execution (checks if files exist and skips regeneration)
   python data_layer/run_pipeline.py
-  # or from within data_layer/
-  python run_pipeline.py
+
+  # Force regeneration of all datasets regardless of existing files
+  python data_layer/run_pipeline.py --force
+
+  # Run pipeline and skip Supabase database ingestion
+  python data_layer/run_pipeline.py --skip-db
   ```
-- **Execution Flow**:
-  1. **Raw Indicator Generation**: Writes `nigeria_lga_indicators.json` (calibrated with official NBS 2022 MPI and NDHS indicators) and `essential_commodities.json`.
-  2. **Facility Registry Parsing**: Ingests real facility GPS coordinates and metadata from `GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv`, normalizes NPHCDA tiers, and calibrates staffing and cold-chain capacity.
-  3. **Mechanistic Simulation**: Runs the 52-week stock depletion, seasonal surge, and reporting decay simulation across all 1,292 facilities and 8 essential commodities.
-  4. **Spatial Network Construction**: Computes spherical Haversine distances to build the directed $k=3$ nearest neighbor graph.
-  5. **Feature Engineering**: Constructs the 40-dimensional facility feature matrix for triage classification.
-  6. **Database Ingestion**: Streams all records directly into Supabase PostgreSQL tables using `init_and_load_db()`.
-  7. **Validation Verification**: Executes analytical checks comparing physical stockout rates between silent facilities ($\ge 3$ missed reports) and actively reporting facilities.
+- **Execution Flow & Caching**:
+  - **Raw Indicator Generation**: Checks for `nigeria_lga_indicators.json` and `essential_commodities.json`; skips generation if both exist.
+  - **Facility Registry Parsing**: Checks for `facilities.parquet` and `facilities.json`; loads from disk if present, otherwise ingests from `GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv`.
+  - **Mechanistic Simulation**: Checks for `weekly_stock_reports.parquet`; loads existing 52-week stock time-series if present, avoiding expensive re-simulation.
+  - **Spatial Network Construction**: Checks for `facility_graph_edges.json`; loads existing nearest neighbor graph if present.
+  - **Feature Engineering**: Checks for `facility_features.parquet`; loads 40-dimensional feature matrix if present.
+  - **Risk Engine Execution**: Checks for `facility_risk_scores.parquet`, `facility_risk_scores.json`, and `risk_scoring_model.joblib`; skips ML re-training if all exist.
+  - **Database Ingestion**: Streams all records directly into Supabase PostgreSQL tables using `init_and_load_db()` (can be skipped with `--skip-db`).
+  - **Validation Verification**: Executes analytical checks comparing physical stockout rates between silent facilities ($\ge 3$ missed reports) and actively reporting facilities.
 
 ---
 
