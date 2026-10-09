@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import facilityRoutes from './routes/facilityRoutes.js';
 import overviewRoutes from './routes/overviewRoutes.js';
 import simulationRoutes from './routes/simulationRoutes.js';
-import { loadDataLayer } from './services/dataLoader.js';
+import { initDataLoader, getDataLoaderStatus } from './services/dataLoader.js';
 
 dotenv.config();
 
@@ -22,18 +22,22 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-try {
-  loadDataLayer();
-} catch (err: any) {
-  console.warn('Initial data load warning:', err.message);
-}
+// Initialize data layer from Supabase database (with automatic local fallback)
+initDataLoader().catch(err => {
+  console.warn('[Server] Data initialization notice:', err.message);
+});
 
 app.use('/api/facilities', facilityRoutes);
 app.use('/api/overview', overviewRoutes);
 app.use('/api/simulation', simulationRoutes);
 
 app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', service: 'PHC Pulse TypeScript API', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    service: 'PHC Pulse TypeScript API',
+    data_source: getDataLoaderStatus(),
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

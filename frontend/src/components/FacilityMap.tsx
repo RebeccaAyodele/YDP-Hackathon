@@ -12,28 +12,29 @@ interface FacilityMapProps {
 }
 
 function getMarkerColor(fac: Facility): string {
-  if (fac.is_silent) return '#f59e0b';
-  if (fac.risk_tier === 'CRITICAL') return '#ef4444';
-  if (fac.risk_tier === 'HIGH') return '#f97316';
-  if (fac.risk_tier === 'MEDIUM') return '#eab308';
-  return '#10b981';
+  if (fac.is_silent) return '#D97706'; // Amber for silent
+  if (fac.risk_tier === 'CRITICAL') return '#DC2626'; // Red for critical
+  if (fac.risk_tier === 'HIGH') return '#EA580C'; // Orange for high
+  if (fac.risk_tier === 'MEDIUM') return '#D97706'; // Amber for medium
+  return '#16A34A'; // Green for low risk
 }
 
 function createPopupContent(fac: Facility): string {
+  const riskColor = fac.risk_tier === 'CRITICAL' ? '#DC2626' : fac.risk_tier === 'HIGH' ? '#EA580C' : fac.risk_tier === 'MEDIUM' ? '#D97706' : '#16A34A';
   return `
-    <div style="font-family: sans-serif; padding: 4px; min-width: 180px; color: #0f172a;">
-      <div style="font-weight: 700; font-size: 0.9rem;">${fac.facility_name}</div>
-      <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">
-        ${fac.lga_name} LGA, ${fac.state} (${fac.geopolitical_zone})
+    <div style="font-family: Inter, -apple-system, sans-serif; padding: 6px; min-width: 190px; color: #0F172A;">
+      <div style="font-weight: 700; font-size: 13px; color: #0052FF;">${fac.facility_name}</div>
+      <div style="font-size: 11px; color: #64748B; margin-top: 2px;">
+        ${fac.lga_name} LGA, <strong>${fac.state}</strong> (${fac.facility_type})
       </div>
-      <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 0.75rem; font-weight: 700;">
-          Risk: ${fac.base_risk_score}/100 (${fac.risk_tier})
+      <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 11.5px; font-weight: 700; color: ${riskColor};">
+          Score: ${fac.base_risk_score}/100 [${fac.risk_tier}]
         </span>
-        ${fac.is_silent ? '<span style="color: #d97706; font-weight: 700; font-size: 0.7rem;">⚠️ SILENT</span>' : ''}
+        ${fac.is_silent ? '<span style="font-size: 10px; font-weight: 700; color: #D97706; background: #FEF3C7; padding: 1px 5px; border-radius: 3px;">SILENT</span>' : ''}
       </div>
-      <div style="font-size: 0.72rem; color: #475569; margin-top: 4px;">
-        Staff: ${fac.total_staff} • Cold Chain: ${fac.has_cold_chain ? 'Yes' : 'No'}
+      <div style="font-size: 11px; color: #4B5563; margin-top: 4px;">
+        Staff: <strong>${fac.total_staff}</strong> • Cold Chain: <strong>${fac.has_cold_chain ? 'Equipped' : 'None'}</strong>
       </div>
     </div>
   `;
@@ -54,7 +55,7 @@ function FacilityMapComponent({
   const markerMapRef = useRef<Map<string, L.CircleMarker>>(new Map());
   const prevSelectedIdRef = useRef<string | null>(null);
 
-  // Initialize Map with Hardware-Accelerated Canvas & Parallelized Tile Layer
+  // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
@@ -64,22 +65,16 @@ function FacilityMapComponent({
       zoomControl: true,
       preferCanvas: true,
       wheelDebounceTime: 60,
-      wheelPxPerZoomLevel: 100,
       inertia: true,
-      inertiaDeceleration: 3000,
-      inertiaMaxSpeed: 1500,
       zoomAnimation: true,
       fadeAnimation: true,
-      markerZoomAnimation: true,
     });
 
-    // Parallel multi-subdomain tile fetching for zero-lag panning
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       subdomains: ['a', 'b', 'c'],
       maxZoom: 18,
       attribution: '&copy; OpenStreetMap',
       updateWhenIdle: true,
-      updateWhenZooming: false,
       keepBuffer: 2,
     }).addTo(map);
 
@@ -101,7 +96,7 @@ function FacilityMapComponent({
     };
   }, []);
 
-  // Update/Rebuild markers cleanly using Canvas with lazy popups
+  // Update Markers Batch
   useEffect(() => {
     const map = mapInstanceRef.current;
     const markersLayer = markersLayerRef.current;
@@ -111,39 +106,44 @@ function FacilityMapComponent({
     markersLayer.clearLayers();
     markerMapRef.current.clear();
 
+    const selectedId = selectedFacility?.facility_id;
+
     facilities.forEach(fac => {
       if (!fac.latitude || !fac.longitude) return;
 
-      const isSelected = selectedFacility?.facility_id === fac.facility_id;
+      const isSelected = fac.facility_id === selectedId;
       const color = getMarkerColor(fac);
-      const radius = isSelected ? 10 : fac.risk_tier === 'CRITICAL' ? 7 : 5;
 
-      const circle = L.circleMarker([fac.latitude, fac.longitude], {
+      const circleMarker = L.circleMarker([fac.latitude, fac.longitude], {
         renderer: canvasRenderer,
-        radius,
+        radius: isSelected ? 9.5 : (fac.risk_tier === 'CRITICAL' ? 6 : 4.5),
         fillColor: color,
         fillOpacity: isSelected ? 1 : 0.85,
-        color: isSelected ? '#ffffff' : color,
-        weight: isSelected ? 3 : 1.5,
+        color: isSelected ? '#0052FF' : '#FFFFFF',
+        weight: isSelected ? 3.5 : 1.2,
       });
 
-      circle.on('click', (e) => {
-        L.DomEvent.stopPropagation(e);
+      circleMarker.bindPopup(createPopupContent(fac), {
+        offset: [0, -4]
+      });
+
+      circleMarker.on('click', () => {
         onSelectFacility(fac);
-        
-        // Lazy dynamic popup creation on click
-        L.popup()
-          .setLatLng([fac.latitude, fac.longitude])
-          .setContent(createPopupContent(fac))
-          .openOn(map);
       });
 
-      circle.addTo(markersLayer);
-      markerMapRef.current.set(fac.facility_id, circle);
+      markersLayer.addLayer(circleMarker);
+      markerMapRef.current.set(fac.facility_id, circleMarker);
     });
-  }, [facilities]);
 
-  // Fast lightweight selection highlight without rebuilding markers
+    if (facilities.length > 0 && facilities.length < 500) {
+      const bounds = L.latLngBounds(facilities.map(f => [f.latitude, f.longitude]));
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 11 });
+      }
+    }
+  }, [facilities, onSelectFacility]);
+
+  // Handle Dynamic Selected Marker Style
   useEffect(() => {
     const prevId = prevSelectedIdRef.current;
     const currentId = selectedFacility?.facility_id;
@@ -154,9 +154,10 @@ function FacilityMapComponent({
       if (prevFac) {
         const color = getMarkerColor(prevFac);
         prevMarker.setStyle({
-          radius: prevFac.risk_tier === 'CRITICAL' ? 7 : 5,
-          color: color,
-          weight: 1.5,
+          radius: prevFac.risk_tier === 'CRITICAL' ? 6 : 4.5,
+          color: '#FFFFFF',
+          weight: 1.2,
+          fillColor: color,
           fillOpacity: 0.85,
         });
       }
@@ -164,19 +165,22 @@ function FacilityMapComponent({
 
     if (currentId && markerMapRef.current.has(currentId)) {
       const currentMarker = markerMapRef.current.get(currentId)!;
+      const currentFac = facilities.find(f => f.facility_id === currentId);
+      const trueColor = currentFac ? getMarkerColor(currentFac) : '#16A34A';
       currentMarker.setStyle({
-        radius: 10,
-        color: '#ffffff',
-        weight: 3,
+        radius: 9.5,
+        color: '#0052FF',
+        weight: 3.5,
+        fillColor: trueColor,
         fillOpacity: 1,
       });
       currentMarker.bringToFront();
     }
 
     prevSelectedIdRef.current = currentId || null;
-  }, [selectedFacility?.facility_id]);
+  }, [selectedFacility?.facility_id, facilities]);
 
-  // Smooth camera centering and polyline network rendering
+  // Spatial Adjacency Network Lines
   useEffect(() => {
     const map = mapInstanceRef.current;
     const networkLayer = networkLayerRef.current;
@@ -185,13 +189,11 @@ function FacilityMapComponent({
     networkLayer.clearLayers();
 
     if (selectedFacility && selectedFacility.latitude && selectedFacility.longitude) {
-      map.stop();
-      
       const currentZoom = map.getZoom();
       const targetZoom = Math.max(currentZoom, 10);
-      
+
       map.flyTo([selectedFacility.latitude, selectedFacility.longitude], targetZoom, {
-        duration: 0.45,
+        duration: 0.4,
         easeLinearity: 0.5,
       });
 
@@ -205,62 +207,71 @@ function FacilityMapComponent({
                 [targetFac.latitude, targetFac.longitude],
               ],
               {
-                color: cascadingResult ? '#ef4444' : '#06b6d4',
-                weight: cascadingResult ? 3.5 : 2.5,
-                dashArray: cascadingResult ? '8, 6' : '4, 6',
-                opacity: 0.9,
+                color: cascadingResult ? '#DC2626' : '#0052FF',
+                weight: cascadingResult ? 3 : 2,
+                dashArray: cascadingResult ? '6, 4' : '4, 4',
+                opacity: 0.85,
               }
             ).addTo(networkLayer);
+
+            const neighborMarker = markerMapRef.current.get(neighbor.facility_id);
+            if (neighborMarker) {
+              neighborMarker.setStyle({
+                radius: 7.5,
+                weight: 2,
+                color: cascadingResult ? '#DC2626' : '#0052FF',
+              });
+            }
           }
         });
       }
     }
-  }, [selectedFacility?.facility_id, neighbors, cascadingResult]);
+  }, [selectedFacility?.facility_id, neighbors, cascadingResult, facilities]);
 
   return (
-    <div style={{ height: '100%', minHeight: '650px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-subtle)', position: 'relative' }}>
+    <div style={{ height: '100%', width: '100%', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border-light)', position: 'relative', background: '#F8FAFC' }}>
       <div
         ref={mapContainerRef}
-        style={{ height: '100%', minHeight: '650px', width: '100%', background: '#0f172a' }}
+        style={{ height: '100%', width: '100%' }}
       />
 
+      {/* Clear Status Legend */}
       <div style={{
         position: 'absolute',
-        bottom: '16px',
-        right: '16px',
-        background: 'rgba(15, 23, 42, 0.92)',
-        backdropFilter: 'blur(8px)',
-        padding: '12px 16px',
+        bottom: '14px',
+        right: '14px',
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(4px)',
+        padding: '10px 14px',
         borderRadius: '8px',
-        border: '1px solid var(--border-subtle)',
+        border: '1px solid var(--border-light)',
+        boxShadow: 'var(--shadow-sm)',
         zIndex: 1000,
-        fontSize: '0.75rem',
+        fontSize: '11px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-        pointerEvents: 'none'
+        gap: '5px',
       }}>
-        <div style={{ fontWeight: 700, marginBottom: '2px', color: '#fff' }}>Geospatial Triage Legend</div>
+        <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }}>Risk Indicator Dots</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
-          <span>Critical Risk (70-100)</span>
+          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#DC2626' }} />
+          <span style={{ color: 'var(--text-secondary)' }}>Critical Priority (70–100)</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f97316' }} />
-          <span>High Risk (50-69)</span>
+          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#EA580C' }} />
+          <span style={{ color: 'var(--text-secondary)' }}>High Risk (45–69)</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#eab308' }} />
-          <span>Medium Risk (30-49)</span>
+          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#D97706' }} />
+          <span style={{ color: 'var(--text-secondary)' }}>Medium / Silent (25–44)</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} />
-          <span>Low Risk (0-29)</span>
+          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#16A34A' }} />
+          <span style={{ color: 'var(--text-secondary)' }}>Low Risk (0–24)</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} />
-          <span>Silent / Non-Reporting</span>
+          <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#0052FF' }} />
+          <span style={{ color: 'var(--blue-primary)', fontWeight: 700 }}>Selected Inspection</span>
         </div>
       </div>
     </div>

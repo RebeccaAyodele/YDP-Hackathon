@@ -2,8 +2,10 @@ import { Facility, FacilityDetailResponse, OverviewStats, CascadingSimulationRes
 
 const API_BASE = '/api';
 
-export async function fetchOverviewStats(): Promise<OverviewStats> {
-  const res = await fetch(`${API_BASE}/overview/stats`);
+export async function fetchOverviewStats(filters?: { state?: string } | string): Promise<OverviewStats> {
+  const stateVal = typeof filters === 'string' ? filters : filters?.state;
+  const url = stateVal ? `${API_BASE}/overview/stats?state=${encodeURIComponent(stateVal)}` : `${API_BASE}/overview/stats`;
+  const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch overview stats');
   return res.json();
 }
@@ -72,3 +74,11 @@ export async function simulateCascadingRisk(facilityId: string, shockMagnitude: 
   if (!res.ok) throw new Error('Failed to run cascading simulation');
   return res.json();
 }
+
+export async function fetchDatasetAnalytics(state?: string): Promise<any> {
+  const url = state ? `${API_BASE}/overview/analytics?state=${encodeURIComponent(state)}` : `${API_BASE}/overview/analytics`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to fetch dataset analytics');
+  return res.json();
+}
+
