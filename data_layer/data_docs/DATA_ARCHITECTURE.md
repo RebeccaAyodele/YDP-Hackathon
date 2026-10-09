@@ -14,7 +14,7 @@ This document details the **data layer**, explaining what each file in the data 
  • WHO Malaria & Africa CDC Disease Burden Profiles
            │
            ▼
-[Pipeline Entrypoint: python run_pipeline.py]
+[Pipeline Entrypoint: python data_layer/run_pipeline.py]
  ├── data_layer/real_indicators.py   : Exports data_layer/data/raw/nigeria_lga_indicators.json
  ├── data_layer/commodities.py       : Exports data_layer/data/raw/essential_commodities.json
  ├── data_layer/facility_generator.py: Ingests GRID3 CSV, calibrates staffing, SDD cold chains, power
@@ -42,11 +42,13 @@ This document details the **data layer**, explaining what each file in the data 
 
 ## 2. Pipeline Execution & Script Roles
 
-### `run_pipeline.py` (Root Entrypoint)
-- **Role**: Root execution script for running the complete end-to-end data pipeline.
-- **Location**: Workspace root `run_pipeline.py`.
+### `run_pipeline.py` (Data Layer Entrypoint)
+- **Role**: Primary execution script for running the complete end-to-end data pipeline.
+- **Location**: `data_layer/run_pipeline.py`.
 - **Execution**:
   ```bash
+  python data_layer/run_pipeline.py
+  # or from within data_layer/
   python run_pipeline.py
   ```
 - **Execution Flow**:

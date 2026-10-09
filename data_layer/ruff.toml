@@ -1,0 +1,21 @@
+target-version = "py311"
+line-length = 120
+
+[lint]
+extend-select = ["E", "F"]
+ignore = ["E501"]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401", "E402"]
+"run_pipeline.py" = ["E402"]
+"facility_generator.py" = ["E402"]
+"feature_extractor.py" = ["E402"]
+"network_builder.py" = ["E402"]
+"simulation_engine.py" = ["E402"]
+"risk_engine.py" = ["E402"]
+"db/*" = ["E402"]
+"data_layer/*" = ["E402"]
+"tests/*" = ["E402"]
+
+[format]
+skip-magic-trailing-comma = false

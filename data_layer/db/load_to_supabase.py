@@ -1,12 +1,12 @@
+import json
+import math
 import os
 import sys
-import json
 import time
-import math
 from pathlib import Path
-from typing import Optional, List, Dict
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import psycopg2
 from psycopg2.extras import execute_values
 
@@ -36,7 +36,7 @@ SCHEMA_SQL = DB_DIR / "supabase_schema.sql"
 
 
 def clean_records_for_sql(df: pd.DataFrame):
-    """Replaces NaN, NaT, and infinity values with None for clean database insertion."""
+    "Replaces NaN, NaT, and infinity values with None for clean database insertion."
     records = df.to_dict(orient="records")
     for row in records:
         for k, v in row.items():
@@ -53,14 +53,8 @@ def clean_records_for_sql(df: pd.DataFrame):
     return records
 
 
-def bulk_insert_records(
-    conn,
-    table_name: str,
-    records: list,
-    conflict_col: Optional[str] = None,
-    chunk_size: int = 25000
-):
-    """Inserts a list of dictionary records into a PostgreSQL table using execute_values."""
+def bulk_insert_records(conn, table_name: str, records: list, conflict_col: str | None = None, chunk_size: int = 25000):
+    "Inserts a list of dictionary records into a PostgreSQL table using execute_values."
     if not records:
         return 0
 
@@ -86,10 +80,7 @@ def bulk_insert_records(
         if total > chunk_size:
             elapsed = time.time() - t0
             progress = min(100.0, (i + len(chunk)) / total * 100)
-            print(
-                f"    - Uploaded {i + len(chunk):,}/{total:,} ({progress:.1f}%) in {elapsed:.1f}s",
-                end="\r"
-            )
+            print(f"    Uploaded {i + len(chunk):,}/{total:,} ({progress:.1f}%) in {elapsed:.1f}s", end="\r")
 
     cur.close()
     return total
@@ -97,13 +88,13 @@ def bulk_insert_records(
 
 def load_via_postgres(
     db_url: str,
-    facilities_df: Optional[pd.DataFrame] = None,
-    feat_df: Optional[pd.DataFrame] = None,
-    sim_df: Optional[pd.DataFrame] = None,
-    edges_data: Optional[List[Dict]] = None
+    facilities_df: pd.DataFrame | None = None,
+    feat_df: pd.DataFrame | None = None,
+    sim_df: pd.DataFrame | None = None,
+    edges_data: list[dict] | None = None,
 ):
-    """Connects to Supabase PostgreSQL and streams all datasets into their tables."""
-    print("\n[Database] Connecting to Supabase PostgreSQL...")
+    "Connects to Supabase PostgreSQL and streams all datasets into their tables."
+    print("\n[Database] Connecting to Supabase PostgreSQL")
     conn = psycopg2.connect(db_url)
     cur = conn.cursor()
 
@@ -117,7 +108,7 @@ def load_via_postgres(
     table_exists = cur.fetchone()[0]
 
     if not table_exists and SCHEMA_SQL.exists():
-        print("\n[Setup] Running supabase_schema.sql to create tables and indexes...")
+        print("\n[Setup] Running supabase_schema.sql to create tables and indexes")
         with open(SCHEMA_SQL, "r", encoding="utf-8") as f:
             sql = f.read()
         cur.execute(sql)
@@ -132,7 +123,7 @@ def load_via_postgres(
     # Ingest Nigeria LGA Indicators
     raw_lga = RAW_DIR / "nigeria_lga_indicators.json"
     if raw_lga.exists():
-        print("\nIngesting Nigeria LGA Indicators...")
+        print("\nIngesting Nigeria LGA Indicators")
         with open(raw_lga, "r", encoding="utf-8") as f:
             lga_records = json.load(f)
         bulk_insert_records(conn, "nigeria_lga_indicators", lga_records, conflict_col="lga_id")
@@ -141,23 +132,23 @@ def load_via_postgres(
     # Essential Commodities Catalog
     raw_comm = RAW_DIR / "essential_commodities.json"
     if raw_comm.exists():
-        print("\nIngesting Essential Commodities Catalog...")
+        print("\nIngesting Essential Commodities Catalog")
         with open(raw_comm, "r", encoding="utf-8") as f:
             comm_records = json.load(f)
         bulk_insert_records(conn, "essential_commodities", comm_records, conflict_col="commodity_id")
         print(f"Inserted {len(comm_records)} essential commodities.")
 
     # Ingest Facilities Registry
-    print("\nIngesting Facilities Registry.......")
+    print("\nIngesting Facilities Registry")
     if facilities_df is None:
         fac_parquet = PROCESSED_DIR / "facilities.parquet"
         fac_json = PROCESSED_DIR / "facilities.json"
         if fac_parquet.exists():
-            print("Reading facilities from facilities.parquet...")
+            print("Reading facilities from facilities.parquet")
             df_fac = pd.read_parquet(fac_parquet)
             fac_records = clean_records_for_sql(df_fac)
         elif fac_json.exists():
-            print("Reading facilities from facilities.json..;....")
+            print("Reading facilities from facilities.json")
             with open(fac_json, "r", encoding="utf-8") as f:
                 fac_records = json.load(f)
         else:

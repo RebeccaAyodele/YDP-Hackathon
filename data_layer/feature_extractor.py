@@ -1,26 +1,25 @@
-from typing import Dict, List, Optional
-import pandas as pd
-import numpy as np
 import sys
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
 if str(WORKSPACE_ROOT) not in sys.path:
     sys.path.insert(0, str(WORKSPACE_ROOT))
 
-from data_layer.real_indicators import get_lga_indicators_map
-from data_layer.facility_generator import FacilityRecord
+try:
+    from data_layer.facility_generator import FacilityRecord
+    from data_layer.real_indicators import get_lga_indicators_map
+except ImportError:
+    from facility_generator import FacilityRecord
+    from real_indicators import get_lga_indicators_map
 
 
 class FacilityFeatureExtractor:
-    """Extracts facility-level feature representations from simulated reporting history."""
+    "Extracts facility-level feature representations from simulated reporting history."
 
-    def __init__(
-        self,
-        facilities: List[FacilityRecord],
-        simulation_df: pd.DataFrame,
-        eval_week: int = 52
-    ):
+    def __init__(self, facilities: list[FacilityRecord], simulation_df: pd.DataFrame, eval_week: int = 52):
         self.facilities = facilities
         self.facilities_map = {f.facility_id: f for f in facilities}
         self.simulation_df = simulation_df
@@ -37,7 +36,7 @@ class FacilityFeatureExtractor:
         w4_start = max(1, self.eval_week - 3)
         w12_start = max(1, self.eval_week - 11)
 
-        feature_rows: List[Dict] = []
+        feature_rows: list[dict] = []
         grouped_history = dict(tuple(history.groupby("facility_id")))
 
         for facility in self.facilities:
@@ -46,12 +45,7 @@ class FacilityFeatureExtractor:
             lga = self.lga_map.get(facility.lga_id)
 
             facility_weeks = f_history[
-                [
-                    "week_number",
-                    "report_submitted",
-                    "consecutive_reports_missed",
-                    "report_delay_days"
-                ]
+                ["week_number", "report_submitted", "consecutive_reports_missed", "report_delay_days"]
             ].drop_duplicates()
             facility_weeks = facility_weeks.sort_values("week_number")
 
@@ -112,11 +106,7 @@ class FacilityFeatureExtractor:
             true_has_stockout_any = bool(true_stockout_count > 0)
             true_cold_breach = bool(current_week_ground["cold_chain_breach"].any())
 
-            critical_ids = [
-                "act_artemether_lumefantrine",
-                "oxytocin_injection",
-                "penta_vaccine"
-            ]
+            critical_ids = ["act_artemether_lumefantrine", "oxytocin_injection", "penta_vaccine"]
             crit_records = current_week_ground[current_week_ground["commodity_id"].isin(critical_ids)]
             true_critical_stockout = bool(crit_records["is_stockout"].any())
 
@@ -172,14 +162,14 @@ class FacilityFeatureExtractor:
                 "ground_truth_stockout_any": int(true_has_stockout_any),
                 "ground_truth_stockout_count": true_stockout_count,
                 "ground_truth_critical_stockout": int(true_critical_stockout),
-                "ground_truth_risk_score": ground_truth_risk_score
+                "ground_truth_risk_score": ground_truth_risk_score,
             }
             feature_rows.append(feature_row)
 
         df = pd.DataFrame(feature_rows)
         return df
 
-    def export_features(self, output_path: Optional[Path] = None, save_to_disk: bool = False):
+    def export_features(self, output_path: Path | None = None, save_to_disk: bool = False):
         """Extracts facility features and returns DataFrame directly for database ingestion."""
         df = self.extract_features()
         if save_to_disk and output_path is not None:
