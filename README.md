@@ -27,12 +27,13 @@
   - [Step 2: Start the Backend API (Port 5000)](#3-step-2-start-the-backend-api-terminal-1)
   - [Step 3: Start the Frontend Dashboard (Port 3000)](#4-step-3-start-the-frontend-dashboard-terminal-2)
 - [Key Dashboard Capabilities](#-key-dashboard-capabilities)
-- [Analytical Validation & Findings](#-analytical-validation--findings)
+- [Analytical Validation & Findings (Simulated)](#-analytical-validation--findings-simulated)
 - [Documentation Index](#-documentation-index)
 - [Team & Acknowledgements](#-team--acknowledgements)
 - [License](#-license)
 
 ---
+
 ## 📌 Overview
 
 **Repulse** is an early-warning platform for Nigeria's Primary Healthcare Centres (PHCs). It predicts facility-level stockouts, staffing collapses and patient overflow *before* they become crises, and it treats a facility that stops reporting as a warning sign rather than missing data.
@@ -46,7 +47,7 @@ PHCs are meant to be the first point of care for most Nigerians, but the system 
 - **Key commodities stock out for long periods.** A survey of 1,858 facilities in 7 northern states found ACT stockout rates above 50% in every state, and rapid malaria tests out of stock at over half of facilities in 5 states ([Global Health: Science and Practice](https://www.ghspjournal.org/content/ghsp/12/3/e2200547.full.pdf)). In Katsina, one malaria stockout lasted 222 days ([IJPHS](https://ijphs.iaescore.com/index.php/IJPHS/article/view/18218)).
 - **Basic infrastructure is missing.** Across PHCs in 16 states, 38% had no electricity and 39% relied on unsafe water ([NAN / Orodata](https://nannews.ng/97-of-phcs-in-16-states-fail-staffing-standard/)). BudgIT's 2025 survey found an average of 5.93 health workers per facility, with nearly three in four PHCs having no physician ([Guardian Nigeria](https://guardian.ng/featured/85-phcs-in-distress-without-doctors-despite-n55-4b-budget-in-4yrs/)).
 - **Power failures threaten the cold chain.** In Nasarawa State, vaccine cold-chain performance was undermined by poor maintenance, thin training and no backup power, even though most facilities use solar ([IJCMPH](https://www.ijcmph.com/index.php/ijcmph/article/view/15599)).
-- **The burden falls hardest where poverty is highest.** 63% of Nigerians are multidimensionally poor, rising to 72% in rural areas ([Vanguard](https://www.vanguardngr.com/2022/11/133m-nigerians-multidimensionally-poor-nbs/amp/)). Child outcomes track this: under-five mortality is 110 per 1,000 nationally ([FMINO](https://fmino.gov.ng/fg-launches-2024-ndhs-report-unveils-data-on-fertility-child-mortality-others/)), but Gombe (157) and Yobe (145) are far above it ([BusinessDay](https://businessday.ng/health/article/one-in-every-nine-children-die-before-age-five-report/)).
+- **The burden falls hardest where poverty is highest.** The NBS 2022 Multidimensional Poverty Index found 62.9% of Nigerians multidimensionally poor (national MPI 0.257), rising to 72.0% in rural areas against 42.0% in urban areas ([official NBS report, Appendix D4](data_layer/data_docs/NIGERIA%20MULTIDIMENSIONAL%20POVERTY%20INDEX%20SURVEY%20RESULTS%202022%20(1).pdf); coverage in [Vanguard](https://www.vanguardngr.com/2022/11/133m-nigerians-multidimensionally-poor-nbs/amp/)). Child outcomes track this: under-five mortality is 110 per 1,000 nationally ([FMINO](https://fmino.gov.ng/fg-launches-2024-ndhs-report-unveils-data-on-fertility-child-mortality-others/)), but Gombe (157) and Yobe (145) are far above it ([BusinessDay](https://businessday.ng/health/article/one-in-every-nine-children-die-before-age-five-report/)).
 
 ### The gap
 
@@ -63,7 +64,7 @@ When a PHC fails, patients move elsewhere. Roughly 60-90% of patients in Nigeria
 
 ### A note on data
 
-Facility locations come from the real [GRID3 Nigeria](https://nigeria.grid3.org/) registry, and macro indicators are calibrated to NBS 2022 MPI and NDHS 2023-24 results. Weekly stock levels and reporting behaviour are **simulated** from public-health priors, because facility-level stock data is not openly available. The figures in the *Analytical Validation* section therefore describe the simulation's behaviour, not measured real-world outcomes. See [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) for every assumption.
+Facility locations come from the real [GRID3 Nigeria](https://nigeria.grid3.org/) registry, and area-level indicators are taken from the official NBS 2022 MPI report and the NDHS 2023-24. Weekly stock levels and reporting behaviour are **simulated** from public-health priors, because facility-level stock data is not openly available. The figures in the *Analytical Validation* section therefore describe the simulation's behaviour, not measured real-world outcomes. See [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) for every assumption.
 
 ---
 
@@ -72,9 +73,9 @@ Facility locations come from the real [GRID3 Nigeria](https://nigeria.grid3.org/
 Comprehensive documentation for the data pipeline, empirical calibrations, and underlying assumptions is maintained inside [`data_layer/data_docs/`](data_layer/data_docs):
 
 1. **[`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md)**:
-   * Exhaustive mathematical, policy, and epidemiological justifications for every indicator.
-   * Official National Bureau of Statistics (NBS) 2022 Multidimensional Poverty Index (MPI) benchmarks across all 6 geopolitical zones.
-   * Detailed breakdown of the two regional seasons: South (bimodal rain) vs. North (unimodal rain & severe Harmattan dust peaks).
+   * Mathematical, policy, and epidemiological justifications for every indicator.
+   * Official National Bureau of Statistics (NBS) 2022 Multidimensional Poverty Index (MPI) values for the national level, all 6 geopolitical zones, the 6 focal states, and the senatorial districts used for LGA baselines.
+   * Breakdown of the two regional seasons: South (bimodal rain) vs. North (unimodal rain & severe Harmattan dust peaks).
    * Markov compounding silence decay formulation ($P(\text{Report}_t) = P_0 \times 0.72^k$).
 
 2. **[`data_layer/data_docs/DATA_ARCHITECTURE.md`](data_layer/data_docs/DATA_ARCHITECTURE.md)**:
@@ -89,12 +90,14 @@ Comprehensive documentation for the data pipeline, empirical calibrations, and u
 * **Conventional Systems (DHIS2 / LMIS)**:  
   Facility Faces Crisis → Staff Overwhelmed → Stops Submitting Reports → Treated as "No Data" → ❌ **Silent Failure**
 
-* **Repulse Early-Warning Paradigm**:  
-  Facility Faces Crisis → Stops Submitting Reports → Silence Decay Triggered → Spatial Overflow Simulated → 🚨 **Immediate Early Warning**
+* **Repulse Early-Warning Approach**:  
+  Facility Faces Crisis → Stops Submitting Reports → Silence Decay Triggered → Spatial Overflow Simulated → 🚨 **Early Warning**
 
-1. **Silence Compounds ("The Silent Crisis")**: A facility with one nurse and no solar inverter is both more likely to stock out of essential medicines and more likely to miss weekly reporting deadlines. In standard dashboards, non-reporting facilities fade away into blank rows. In Repulse, every consecutive week of silence compounds the risk score using a calibrated Markov decay model ($P(\text{Report}_t) = P_0 \times 0.72^k$).
-2. **Cascading Disruption & Patient Spillover**: Facilities do not exist in geographic vacuums. When a primary clinic runs out of Artemether-Lumefantrine (ACTs) or pediatric Amoxicillin DT, sick patients travel to the next closest facility. That neighboring facility—already operating with minimal inventory buffers—is suddenly struck by an unexpected surge in demand. Repulse builds a spherical **Haversine $k$-Nearest Neighbors network** to model and simulate multi-hop cascading failures.
-3. **Hidden Risk Detection**: A facility can appear fully stocked and stable on paper, yet sit in the epicenter of surrounding facility collapses. Repulse computes both an isolated **Base Risk Score** and an **Adjusted Cascading Risk Score**, highlighting facilities that are *"one bad week away from being overwhelmed."*
+Repulse is built on three ideas. The first and third are working hypotheses we test in simulation, and the second is a modelling assumption grounded in observed patient behaviour.
+
+1. **Silence compounds (hypothesis).** A facility with one nurse and no solar inverter is plausibly both more likely to stock out of essential medicines and more likely to miss weekly reporting deadlines. In standard dashboards, non-reporting facilities fade into blank rows. In Repulse, every consecutive week of silence raises the risk score through an assumed Markov decay ($P(\text{Report}_t) = P_0 \times 0.72^k$).
+2. **Cascading disruption and patient spillover (assumption).** Facilities do not exist in geographic vacuums. When a primary clinic runs out of Artemether-Lumefantrine (ACTs) or paediatric Amoxicillin DT, patients may travel to the next closest facility, which could already be operating with minimal buffers. Repulse builds a spherical **Haversine $k$-Nearest Neighbours network** to simulate multi-hop cascading failures.
+3. **Hidden risk detection (hypothesis).** A facility can look fully stocked and stable on paper yet sit at the centre of surrounding collapses. Repulse computes both an isolated **Base Risk Score** and an **Adjusted Cascading Risk Score**, highlighting facilities that are *"one bad week away from being overwhelmed."*
 
 ---
 
@@ -102,58 +105,37 @@ Comprehensive documentation for the data pipeline, empirical calibrations, and u
 
 Repulse is structured into four decoupled, production-grade layers:
 
-```mermaid
-graph TD
-    subgraph Layer1["Layer 1: Empirical Data & Mechanistic Simulation"]
-        G[GRID3 Nigeria Facility Registry<br/>1,292 Real Geocoded PHCs] --> FG[Facility Generator]
-        NBS[NBS 2022 Multidimensional Poverty Index] --> RI[Real Macro Indicators]
-        NDHS[NDHS 2023-24 Maternal/Child Data] --> RI
-        WHO[WHO Seasonal Disease Profiles] --> SE[52-Week Mechanistic Stock Simulation Engine]
-        FG --> SE
-        RI --> SE
-        SE --> NB[Spatial Network Builder<br/>Haversine k-NN k=3]
-        SE --> FE[40-Dim Risk Feature Extractor]
-    end
-
-    subgraph Layer2["Layer 2: ML Risk Engine & Spatial Propagation"]
-        FE --> GBR[Gradient-Boosted Tree ML Model<br/>scikit-learn]
-        NB --> CE[Spatial Cascading Propagation Engine]
-        GBR --> RS[Risk Triage & Factor Explainability<br/>LOW, MEDIUM, HIGH, CRITICAL]
-        RS --> CE
-    end
-
-    subgraph Layer3["Layer 3: Decoupled API Layer (Node.js/Express/TypeScript)"]
-        CE --> DB[(Supabase PostgreSQL /<br/>Local Parquet & JSON Cache)]
-        DB --> API[Express TypeScript REST API<br/>/api/facilities<br/>/api/overview<br/>/api/simulation]
-    end
-
-    subgraph Layer4["Layer 4: Interactive Decision Dashboard (React/Vite/Leaflet)"]
-        API --> UI[Repulse Decision Dashboard<br/>• Interactive GIS Risk Map & Silence Rings<br/>• Facility Dossier & Stock Breakdown<br/>• What-If Shock Spillover Simulator<br/>• National & State Persona Switching]
-    end
-```
-
 ---
 
 ## 🔬 Data Sources & Public Health Calibration
 
-Repulse avoids synthetic arbitrariness by anchoring all simulations in authentic Nigerian public health registries and national surveys (see detailed breakdown in [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md)):
+Repulse grounds its simulation in real Nigerian facility registries and national surveys wherever they exist (see detailed breakdown in [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md)). Facility-level stock and reporting behaviour is simulated on top of them.
 
 | Dataset / Source | Origin & Authority | Application in Repulse |
 | :--- | :--- | :--- |
-| **Master Health Facility Registry** | [GRID3 Nigeria GeoPortal](https://nigeria.grid3.org/) | 1,292 authentic public health facilities with verified GPS coordinates, wards, and National Health Facility Registry (NHFR) codes across 24 LGAs. |
-| **Multidimensional Poverty Index (MPI 2022)** | [National Bureau of Statistics (NBS)](https://nigerianstat.gov.ng) | Official Alkire-Foster MPI scores ($H \times A$) for all 6 geopolitical zones and focal states (0.026 in Lagos to 0.562 in Yobe; no artificial 0.90 scores). |
-| **Demographic and Health Survey (NDHS 2023–24)** | [National Population Commission (NPC)](https://nationalpopulation.gov.ng) | State-level Full Immunization Coverage (FIC %), Antenatal Care (ANC 4+ visits), and Under-5 Mortality per 1,000 live births. |
-| **Minimum Standards for PHC** | [NPHCDA / FMOH](http://ngfrepository.org.ng:8080/jspui/handle/123456789/3153) | Facility tier normalization: Comprehensive Health Centre (CHC), Primary Health Centre (PHC), Primary Health Clinic, and Health Post. |
+| **Master Health Facility Registry** | [GRID3 Nigeria GeoPortal](https://nigeria.grid3.org/) | 1,292 public health facilities with GPS coordinates, wards, and National Health Facility Registry (NHFR) codes across 24 LGAs. |
+| **Multidimensional Poverty Index (MPI 2022)** | National Bureau of Statistics (NBS), [official report (PDF)](data_layer/data_docs/NIGERIA%20MULTIDIMENSIONAL%20POVERTY%20INDEX%20SURVEY%20RESULTS%202022%20(1).pdf) | Official Alkire-Foster MPI scores ($H \times A$) for the national level (Appendix D1), geopolitical zones (D5), states (D6) and senatorial districts (D7). Among the focal states, MPI ranges from 0.101 in Lagos to 0.409 in Sokoto. |
+| **Demographic and Health Survey (NDHS 2023–24)** | National Population Commission (NPC), [Key Indicators Report (PDF)](https://dhsprogram.com/pubs/pdf/PR157/PR157.pdf) | State-level Full Immunization Coverage (FIC %), Antenatal Care (ANC 4+ visits), and Under-5 Mortality per 1,000 live births. |
+| **Minimum Standards for PHC** | NPHCDA / FMOH | Facility tier normalization: Comprehensive Health Centre (CHC), Primary Health Centre (PHC), Primary Health Clinic, and Health Post. |
 | **Task-Shifting & Task-Sharing Policy** | Federal Ministry of Health (FMOH) | Realistic staffing models for Community Health Extension Workers (CHEWs), nurse-midwives, and medical officers. |
 | **CCEOP Solar Direct Drive (SDD) Standards** | National Cold Chain Strategy | Infrastructure calibration for solar refrigeration, borehole water, and grid reliability. |
 
 ### Focal Cohort: 6 States Across All 6 Geopolitical Zones
-- **South West**: **Lagos** (Urban commercial benchmark, MPI: `0.026`, Incidence $H$: `5.9%`)
-- **South South**: **Bayelsa** (Riverine Niger Delta terrain, MPI: `0.186`, Incidence $H$: `40.6%`)
-- **North Central**: **Plateau** (Central highland terrain, MPI: `0.259`, Incidence $H$: `55.6%`)
-- **South East**: **Ebonyi** (Agrarian rurality, endemic cholera risks, MPI: `0.380`, Incidence $H$: `73.0%`)
-- **North West**: **Sokoto** (Border Sahelian rurality, lowest immunization baselines, MPI: `0.536`, Incidence $H$: `87.9%`)
-- **North East**: **Yobe** (Conflict recovery infrastructure, MPI: `0.562`, Incidence $H$: `89.5%`)
+
+Values below are taken directly from the NBS 2022 MPI report, Appendix D6 (MPI = Incidence $H$ × Intensity $A$). The national figures are MPI 0.257, $H$ 62.9%, $A$ 40.9%.
+
+| Zone | State | MPI | Incidence $H$ | Intensity $A$ | Context |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| South West | **Lagos** | `0.101` | 29.4% | 34.3% | Urban commercial benchmark |
+| South South | **Bayelsa** | `0.401` | 88.5% | 45.3% | Riverine Niger Delta terrain |
+| North Central | **Plateau** | `0.365` | 84.0% | 43.5% | Central highland terrain |
+| South East | **Ebonyi** | `0.320` | 78.0% | 41.1% | Agrarian rurality, endemic cholera risks |
+| North West | **Sokoto** | `0.409` | 90.5% | 45.2% | Border Sahelian rurality, lowest immunization baselines |
+| North East | **Yobe** | `0.370` | 83.5% | 44.3% | Conflict recovery infrastructure |
+
+The report notes that Sokoto, Bayelsa, Jigawa, Kebbi, Gombe and Yobe are the poorest states but that their confidence intervals overlap, so their exact ranking is uncertain.
+
+**LGA baselines.** The report does not publish LGA-level MPI. Each of the 24 focal LGAs therefore takes the official MPI of its senatorial district (Appendix D7), so LGAs in the same district share a value.
 
 ---
 
@@ -346,21 +328,21 @@ npm run dev
 
 ### 3. Detailed Facility Dossier & Explainability
 - **Clinical Risk Factor Breakdown**: Clear, human-readable explanations behind every risk score (e.g., *"4-week reporting silence (+25 pts), no functional cold chain (+15 pts), severe ACT stockout in neighboring facility (+10 pts)"*).
-- **Weekly Inventory Inspection**: Live status for all 8 monitored commodities, days of stock remaining, unmet demand, and cold-chain temperature breach alerts.
+- **Weekly Inventory Inspection**: Status for all 8 monitored commodities, days of stock remaining, unmet demand, and cold-chain temperature breach alerts.
 
 ### 4. Interactive "What-If" Cascading Shock Simulator
 - Health planners can select any health facility, dial in an artificial shock magnitude (e.g., $+35\%$ sudden disease surge or logistics cutoff), and trigger a multi-hop simulation.
-- The simulator models how patients redirect along Great-Circle routes to the $k=3$ nearest neighboring clinics, calculating real-time added stress, new adjusted risk scores, and secondary facility collapses.
+- The simulator models how patients redirect along Great-Circle routes to the $k=3$ nearest neighboring clinics, calculating added stress, new adjusted risk scores, and secondary facility collapses.
 
 ---
 
-## 📊 Analytical Validation & Findings
+## 📊 Analytical Validation & Findings (Simulated)
 
-During pipeline execution, analytical checks confirm core operational dynamics:
+These checks run during pipeline execution on the **simulated** facility data. They show the model behaves as designed. They are not measurements of real facilities, and the pipeline should be re-run (`python data_layer/run_pipeline.py --force`) to reproduce them.
 
-- **Silence is a Critical Warning Signal**: Facilities silent for 3 or more weeks exhibit an **actual stockout rate more than $2.5\times$ higher** than facilities reporting consistently.
-- **Rural Vulnerability Gradient**: Rural facilities operate with an average of **$1.8$ staff members** (vs. $6.4$ in urban centers), only **$14.2\%$ solar cold-chain coverage**, and lower 12-week reporting completeness.
-- **Network Cascades**: In dense rural clusters, a complete stockout at a single Comprehensive Health Centre transfers up to **$35\%$ of its patient load** to adjacent clinics, triggering secondary stockouts within 10 to 14 days.
+- **Silence is a warning signal in the simulation**: Simulated facilities silent for 3 or more weeks show a stockout rate more than $2.5\times$ higher than facilities reporting consistently. This follows from the assumed link between silence and stockout risk.
+- **Rural vulnerability gradient**: Simulated rural facilities operate with an average of $1.8$ staff members (vs. $6.4$ in urban centres), only $14.2\%$ solar cold-chain coverage, and lower 12-week reporting completeness.
+- **Network cascades**: In dense simulated rural clusters, a complete stockout at a single Comprehensive Health Centre transfers up to $35\%$ of its patient load to adjacent clinics, triggering secondary stockouts within 10 to 14 days.
 
 ---
 
@@ -368,7 +350,7 @@ During pipeline execution, analytical checks confirm core operational dynamics:
 
 | Document | Location | Description |
 | :--- | :--- | :--- |
-| **Data & Assumptions Guide** | [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) | Grounded public health evidence base, NBS 2022 MPI calibrations, seasonal profiles, and Markov decay formulas. |
+| **Data & Assumptions Guide** | [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) | Public health evidence base, NBS 2022 MPI values, seasonal profiles, and Markov decay formulas. |
 | **Data Architecture & Pipeline** | [`data_layer/data_docs/DATA_ARCHITECTURE.md`](data_layer/data_docs/DATA_ARCHITECTURE.md) | Technical blueprint of datasets, Parquet columnar schemas, and Supabase database ingestion routines. |
 | **Official NBS 2022 MPI Survey** | [`data_layer/data_docs/NIGERIA MULTIDIMENSIONAL POVERTY INDEX SURVEY RESULTS 2022 (1).pdf`](data_layer/data_docs/NIGERIA%20MULTIDIMENSIONAL%20POVERTY%20INDEX%20SURVEY%20RESULTS%202022%20(1).pdf) | Official survey publication from the National Bureau of Statistics (NBS). |
 | **Implementation Guide** | [`.docs/PHC_Pulse_Implementation_Guide.pdf`](.docs/PHC_Pulse_Implementation_Guide.pdf) | Original architectural and hackathon implementation blueprint. |
