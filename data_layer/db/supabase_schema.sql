@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS nigeria_lga_indicators (
     lga_name TEXT NOT NULL,
     state TEXT NOT NULL,
     geopolitical_zone TEXT NOT NULL,
+    senatorial_district TEXT,
     centroid_lat DOUBLE PRECISION NOT NULL,
     centroid_lon DOUBLE PRECISION NOT NULL,
     rurality_rate DOUBLE PRECISION NOT NULL,

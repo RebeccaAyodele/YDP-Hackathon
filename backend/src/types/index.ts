@@ -134,6 +134,7 @@ export interface LGAContext {
   lga_name: string;
   state_name: string;
   geopolitical_zone: string;
+  senatorial_district?: string;
   poverty_mpi_2022: number;
   poverty_headcount_h: number;
   poverty_intensity_a: number;

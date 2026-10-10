@@ -55,7 +55,7 @@ def run_pipeline(force_recompute: bool = False, skip_db: bool = False):
     model_path = models_dir / "risk_scoring_model.joblib"
 
     # Raw Indicators & Commodities Catalog
-    print("\n--- Real Public Health Baseline Indicators & Commodities ---")
+    print("\nReal Public Health Baseline Indicators & Commodities")
     if not force_recompute and raw_lga_path.exists() and commodities_path.exists():
         print(f"Files already exist at {raw_lga_path.name} and {commodities_path.name}. Skipping generation.........")
     else:
@@ -67,7 +67,7 @@ def run_pipeline(force_recompute: bool = False, skip_db: bool = False):
         print(f"Saved {len(ESSENTIAL_COMMODITIES)} essential commodities to {commodities_path.name}")
 
     # Facility Registry Generation
-    print("\n--- Calibrated Facility Registry ---")
+    print("\nCalibrated Facility Registry")
     if not force_recompute and fac_parquet_path.exists() and fac_json_path.exists():
         print(f"Files already exist ({fac_parquet_path.name}, {fac_json_path.name}). Loading from disk.......")
         facilities_df = pd.read_parquet(fac_parquet_path)
@@ -76,7 +76,7 @@ def run_pipeline(force_recompute: bool = False, skip_db: bool = False):
         facilities = [FacilityRecord(**f) for f in fac_data]
         print(f"Loaded {len(facilities)} Primary Healthcare Facilities from {fac_parquet_path.name}.")
     else:
-        print("Generating Calibrated Facility Registry.......")
+        print("Generating Calibrated Facility Registry..........")
         generator = FacilityGenerator(seed=42)
         facilities = generator.export_to_json(fac_json_path)
         facilities_df = pd.DataFrame([f.__dict__ for f in facilities])
@@ -100,7 +100,7 @@ def run_pipeline(force_recompute: bool = False, skip_db: bool = False):
         sim_df = pd.read_parquet(sim_parquet_path)
         print(f"Loaded {len(sim_df):,} records from {processed_dir.name}/{sim_parquet_path.name}")
     else:
-        print("Running Mechanistic Simulation (52 Weeks)......")
+        print("Running Mechanistic Simulation (52 Weeks)...........")
         sim_engine = StockSimulationEngine(
             facilities=facilities, commodities=ESSENTIAL_COMMODITIES, num_weeks=52, seed=101
         )
@@ -111,11 +111,11 @@ def run_pipeline(force_recompute: bool = False, skip_db: bool = False):
     # Simulation Sanity Diagnostics
     reporting_rate = sim_df["report_submitted"].mean()
     stockout_rate = sim_df["is_stockout"].mean()
-    print(f"  Overall report submission rate: {reporting_rate:.1%}")
-    print(f"  Overall weekly stockout event rate: {stockout_rate:.1%}")
+    print(f"Overall report submission rate: {reporting_rate:.1%}")
+    print(f"Overall weekly stockout event rate: {stockout_rate:.1%}")
 
     # Spatial Adjacency Network Builder (Cascading Risk Layer Graph)
-    print("\n--- Facility Spatial Network (Haversine k-NN) ---")
+    print("\nFacility Spatial Network (Haversine k-NN)")
     if not force_recompute and edges_json_path.exists():
         print(f"Graph already exists at {edges_json_path.name}. Loading from disk.......")
         with open(edges_json_path, "r", encoding="utf-8") as f:

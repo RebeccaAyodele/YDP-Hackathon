@@ -124,6 +124,8 @@ def load_via_postgres(
     raw_lga = RAW_DIR / "nigeria_lga_indicators.json"
     if raw_lga.exists():
         print("\nIngesting Nigeria LGA Indicators")
+        cur.execute("ALTER TABLE IF EXISTS nigeria_lga_indicators ADD COLUMN IF NOT EXISTS senatorial_district TEXT;")
+        conn.commit()
         with open(raw_lga, "r", encoding="utf-8") as f:
             lga_records = json.load(f)
         bulk_insert_records(conn, "nigeria_lga_indicators", lga_records, conflict_col="lga_id")

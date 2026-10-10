@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from pathlib import Path
 
 
@@ -20,10 +20,11 @@ class LGAContext:
     cholera_risk_score: float  # Water-borne / cholera risk index (0.0 to 1.0)
     road_access_index: float  # Logistics / transport accessibility (0.0=remote/poor, 1.0=metropolitan highway)
     telecom_coverage_rate: float  # Mobile/GSM reporting connectivity (0.0 to 1.0)
+    senatorial_district: str = ""
 
 
 # GEO POLITICAL ANDSTATE MPI are just for reference sake, it is not used in the simulation
-# National Bureau of Statistics (NBS) 2022 Multidimensional Poverty Index (MPI) by Geopolitical Zone
+# NBS 2022 MPI by geopolitical zone (Appendix D5)
 GEOPOLITICAL_ZONE_MPI_2022: dict[str, dict] = {
     "National": {"mpi": 0.257, "incidence_h": 0.629, "intensity_a": 0.409, "poor_people_million": 132.92},
     "North Central": {"mpi": 0.272, "incidence_h": 0.663, "intensity_a": 0.410, "poor_people_million": 20.19},
@@ -34,30 +35,28 @@ GEOPOLITICAL_ZONE_MPI_2022: dict[str, dict] = {
     "South West": {"mpi": 0.151, "incidence_h": 0.400, "intensity_a": 0.377, "poor_people_million": 16.27},
 }
 
-# NBS 2022 Multidimensional Poverty Index (MPI) for Selected Focal States
+# NBS 2022 MPI for the six focal states
 STATE_MPI_2022: dict[str, dict] = {
-    "Lagos": {"mpi": 0.026, "incidence_h": 0.059, "intensity_a": 0.443, "classification": "Least poor"},
-    "Plateau": {"mpi": 0.259, "incidence_h": 0.556, "intensity_a": 0.466, "classification": "Moderately poor"},
-    "Bayelsa": {"mpi": 0.186, "incidence_h": 0.406, "intensity_a": 0.458, "classification": "Moderately poor"},
-    "Ebonyi": {"mpi": 0.380, "incidence_h": 0.730, "intensity_a": 0.521, "classification": "Very poor"},
-    "Sokoto": {"mpi": 0.536, "incidence_h": 0.879, "intensity_a": 0.610, "classification": "Extremely poor"},
-    "Yobe": {"mpi": 0.562, "incidence_h": 0.895, "intensity_a": 0.628, "classification": "Extremely poor"},
+    "Lagos": {"mpi": 0.101, "incidence_h": 0.294, "intensity_a": 0.343, "classification": "Least poor"},
+    "Plateau": {"mpi": 0.365, "incidence_h": 0.840, "intensity_a": 0.435, "classification": "Very poor"},
+    "Bayelsa": {"mpi": 0.401, "incidence_h": 0.885, "intensity_a": 0.453, "classification": "Extremely poor"},
+    "Ebonyi": {"mpi": 0.320, "incidence_h": 0.780, "intensity_a": 0.411, "classification": "Moderately poor"},
+    "Sokoto": {"mpi": 0.409, "incidence_h": 0.905, "intensity_a": 0.452, "classification": "Extremely poor"},
+    "Yobe": {"mpi": 0.370, "incidence_h": 0.835, "intensity_a": 0.443, "classification": "Extremely poor"},
 }
 
-
-# Baseline indicators for 24 focal LGAs across 6 geopolitical zones
-# poverty_headcount_mpi models the NBS 2022 MPI values
+# Baseline indicators for 24 focal LGAs across 6 geopolitical zones.
 NIGERIA_LGA_DATA: list[dict] = [
-    # southwest
     {
         "lga_id": "lagos_ikeja",
         "lga_name": "Ikeja",
         "state": "Lagos",
         "geopolitical_zone": "South West",
+        "senatorial_district": "Lagos Central",
         "centroid_lat": 6.6018,
         "centroid_lon": 3.3515,
         "rurality_rate": 0.01,
-        "poverty_headcount_mpi": 0.015,
+        "poverty_headcount_mpi": 0.077,
         "full_immunization_rate": 0.84,
         "anc4_coverage_rate": 0.88,
         "under5_mortality_per_1k": 42.0,
@@ -71,10 +70,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Alimosho",
         "state": "Lagos",
         "geopolitical_zone": "South West",
+        "senatorial_district": "Lagos West",
         "centroid_lat": 6.6092,
         "centroid_lon": 3.2619,
         "rurality_rate": 0.03,
-        "poverty_headcount_mpi": 0.024,
+        "poverty_headcount_mpi": 0.098,
         "full_immunization_rate": 0.78,
         "anc4_coverage_rate": 0.82,
         "under5_mortality_per_1k": 50.0,
@@ -88,10 +88,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Epe",
         "state": "Lagos",
         "geopolitical_zone": "South West",
+        "senatorial_district": "Lagos East",
         "centroid_lat": 6.5841,
         "centroid_lon": 3.9831,
         "rurality_rate": 0.45,
-        "poverty_headcount_mpi": 0.034,
+        "poverty_headcount_mpi": 0.129,
         "full_immunization_rate": 0.70,
         "anc4_coverage_rate": 0.74,
         "under5_mortality_per_1k": 58.0,
@@ -105,10 +106,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Badagry",
         "state": "Lagos",
         "geopolitical_zone": "South West",
+        "senatorial_district": "Lagos West",
         "centroid_lat": 6.4314,
         "centroid_lon": 2.8876,
         "rurality_rate": 0.40,
-        "poverty_headcount_mpi": 0.031,
+        "poverty_headcount_mpi": 0.098,
         "full_immunization_rate": 0.68,
         "anc4_coverage_rate": 0.72,
         "under5_mortality_per_1k": 60.0,
@@ -117,16 +119,16 @@ NIGERIA_LGA_DATA: list[dict] = [
         "road_access_index": 0.65,
         "telecom_coverage_rate": 0.86,
     },
-    # north west
     {
         "lga_id": "sokoto_south",
         "lga_name": "Sokoto South",
         "state": "Sokoto",
         "geopolitical_zone": "North West",
+        "senatorial_district": "Sokoto North",
         "centroid_lat": 13.0200,
         "centroid_lon": 5.2300,
         "rurality_rate": 0.08,
-        "poverty_headcount_mpi": 0.395,
+        "poverty_headcount_mpi": 0.420,
         "full_immunization_rate": 0.28,
         "anc4_coverage_rate": 0.45,
         "under5_mortality_per_1k": 132.0,
@@ -140,10 +142,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Illela",
         "state": "Sokoto",
         "geopolitical_zone": "North West",
+        "senatorial_district": "Sokoto North",
         "centroid_lat": 13.7292,
         "centroid_lon": 5.3000,
         "rurality_rate": 0.88,
-        "poverty_headcount_mpi": 0.585,
+        "poverty_headcount_mpi": 0.420,
         "full_immunization_rate": 0.14,
         "anc4_coverage_rate": 0.21,
         "under5_mortality_per_1k": 164.0,
@@ -157,10 +160,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Tambuwal",
         "state": "Sokoto",
         "geopolitical_zone": "North West",
+        "senatorial_district": "Sokoto South",
         "centroid_lat": 12.4000,
         "centroid_lon": 4.6700,
         "rurality_rate": 0.85,
-        "poverty_headcount_mpi": 0.582,
+        "poverty_headcount_mpi": 0.401,
         "full_immunization_rate": 0.16,
         "anc4_coverage_rate": 0.24,
         "under5_mortality_per_1k": 158.0,
@@ -174,10 +178,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Bodinga",
         "state": "Sokoto",
         "geopolitical_zone": "North West",
+        "senatorial_district": "Sokoto South",
         "centroid_lat": 12.8333,
         "centroid_lon": 5.2400,
         "rurality_rate": 0.82,
-        "poverty_headcount_mpi": 0.582,
+        "poverty_headcount_mpi": 0.401,
         "full_immunization_rate": 0.18,
         "anc4_coverage_rate": 0.28,
         "under5_mortality_per_1k": 152.0,
@@ -186,16 +191,16 @@ NIGERIA_LGA_DATA: list[dict] = [
         "road_access_index": 0.42,
         "telecom_coverage_rate": 0.56,
     },
-    # north east
     {
         "lga_id": "yobe_damaturu",
         "lga_name": "Damaturu",
         "state": "Yobe",
         "geopolitical_zone": "North East",
+        "senatorial_district": "Yobe East",
         "centroid_lat": 11.7470,
         "centroid_lon": 11.9608,
         "rurality_rate": 0.20,
-        "poverty_headcount_mpi": 0.425,
+        "poverty_headcount_mpi": 0.345,
         "full_immunization_rate": 0.42,
         "anc4_coverage_rate": 0.52,
         "under5_mortality_per_1k": 110.0,
@@ -209,10 +214,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Geidam",
         "state": "Yobe",
         "geopolitical_zone": "North East",
+        "senatorial_district": "Yobe North",
         "centroid_lat": 12.8944,
         "centroid_lon": 11.9304,
         "rurality_rate": 0.86,
-        "poverty_headcount_mpi": 0.658,
+        "poverty_headcount_mpi": 0.394,
         "full_immunization_rate": 0.20,
         "anc4_coverage_rate": 0.26,
         "under5_mortality_per_1k": 145.0,
@@ -226,10 +232,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Gujba",
         "state": "Yobe",
         "geopolitical_zone": "North East",
+        "senatorial_district": "Yobe East",
         "centroid_lat": 11.5000,
         "centroid_lon": 11.9333,
         "rurality_rate": 0.85,
-        "poverty_headcount_mpi": 0.660,
+        "poverty_headcount_mpi": 0.345,
         "full_immunization_rate": 0.22,
         "anc4_coverage_rate": 0.28,
         "under5_mortality_per_1k": 142.0,
@@ -243,10 +250,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Potiskum",
         "state": "Yobe",
         "geopolitical_zone": "North East",
+        "senatorial_district": "Yobe South",
         "centroid_lat": 11.7091,
         "centroid_lon": 11.0694,
         "rurality_rate": 0.35,
-        "poverty_headcount_mpi": 0.505,
+        "poverty_headcount_mpi": 0.425,
         "full_immunization_rate": 0.38,
         "anc4_coverage_rate": 0.44,
         "under5_mortality_per_1k": 118.0,
@@ -255,16 +263,16 @@ NIGERIA_LGA_DATA: list[dict] = [
         "road_access_index": 0.68,
         "telecom_coverage_rate": 0.82,
     },
-    # SOUTH SOUTH
     {
         "lga_id": "bayelsa_yenagoa",
         "lga_name": "Yenagoa",
         "state": "Bayelsa",
         "geopolitical_zone": "South South",
+        "senatorial_district": "Bayelsa Central",
         "centroid_lat": 4.9267,
         "centroid_lon": 6.2676,
         "rurality_rate": 0.25,
-        "poverty_headcount_mpi": 0.130,
+        "poverty_headcount_mpi": 0.353,
         "full_immunization_rate": 0.42,
         "anc4_coverage_rate": 0.52,
         "under5_mortality_per_1k": 98.0,
@@ -278,10 +286,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Southern Ijaw",
         "state": "Bayelsa",
         "geopolitical_zone": "South South",
+        "senatorial_district": "Bayelsa East",
         "centroid_lat": 4.8100,
         "centroid_lon": 6.0700,
         "rurality_rate": 0.94,
-        "poverty_headcount_mpi": 0.210,
+        "poverty_headcount_mpi": 0.347,
         "full_immunization_rate": 0.18,
         "anc4_coverage_rate": 0.25,
         "under5_mortality_per_1k": 146.0,
@@ -295,10 +304,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Nembe",
         "state": "Bayelsa",
         "geopolitical_zone": "South South",
+        "senatorial_district": "Bayelsa East",
         "centroid_lat": 4.5333,
         "centroid_lon": 6.4000,
         "rurality_rate": 0.90,
-        "poverty_headcount_mpi": 0.204,
+        "poverty_headcount_mpi": 0.347,
         "full_immunization_rate": 0.22,
         "anc4_coverage_rate": 0.28,
         "under5_mortality_per_1k": 138.0,
@@ -312,10 +322,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Brass",
         "state": "Bayelsa",
         "geopolitical_zone": "South South",
+        "senatorial_district": "Bayelsa East",
         "centroid_lat": 4.3167,
         "centroid_lon": 6.2417,
         "rurality_rate": 0.92,
-        "poverty_headcount_mpi": 0.200,
+        "poverty_headcount_mpi": 0.347,
         "full_immunization_rate": 0.20,
         "anc4_coverage_rate": 0.26,
         "under5_mortality_per_1k": 142.0,
@@ -324,16 +335,16 @@ NIGERIA_LGA_DATA: list[dict] = [
         "road_access_index": 0.14,
         "telecom_coverage_rate": 0.38,
     },
-    # South East
     {
         "lga_id": "ebonyi_abakaliki",
         "lga_name": "Abakaliki",
         "state": "Ebonyi",
         "geopolitical_zone": "South East",
+        "senatorial_district": "Ebonyi North",
         "centroid_lat": 6.3249,
         "centroid_lon": 8.1137,
         "rurality_rate": 0.22,
-        "poverty_headcount_mpi": 0.260,
+        "poverty_headcount_mpi": 0.339,
         "full_immunization_rate": 0.54,
         "anc4_coverage_rate": 0.62,
         "under5_mortality_per_1k": 88.0,
@@ -347,10 +358,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Ikwo",
         "state": "Ebonyi",
         "geopolitical_zone": "South East",
+        "senatorial_district": "Ebonyi Central",
         "centroid_lat": 6.0833,
         "centroid_lon": 8.1500,
         "rurality_rate": 0.88,
-        "poverty_headcount_mpi": 0.420,
+        "poverty_headcount_mpi": 0.341,
         "full_immunization_rate": 0.28,
         "anc4_coverage_rate": 0.35,
         "under5_mortality_per_1k": 126.0,
@@ -364,10 +376,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Ezza South",
         "state": "Ebonyi",
         "geopolitical_zone": "South East",
+        "senatorial_district": "Ebonyi Central",
         "centroid_lat": 6.1400,
         "centroid_lon": 8.0300,
         "rurality_rate": 0.85,
-        "poverty_headcount_mpi": 0.418,
+        "poverty_headcount_mpi": 0.341,
         "full_immunization_rate": 0.32,
         "anc4_coverage_rate": 0.38,
         "under5_mortality_per_1k": 120.0,
@@ -381,10 +394,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Ohaukwu",
         "state": "Ebonyi",
         "geopolitical_zone": "South East",
+        "senatorial_district": "Ebonyi North",
         "centroid_lat": 6.5500,
         "centroid_lon": 8.0100,
         "rurality_rate": 0.86,
-        "poverty_headcount_mpi": 0.422,
+        "poverty_headcount_mpi": 0.339,
         "full_immunization_rate": 0.30,
         "anc4_coverage_rate": 0.36,
         "under5_mortality_per_1k": 124.0,
@@ -393,16 +407,16 @@ NIGERIA_LGA_DATA: list[dict] = [
         "road_access_index": 0.38,
         "telecom_coverage_rate": 0.55,
     },
-    # NORTH CENTRAL
     {
         "lga_id": "plateau_jos_north",
         "lga_name": "Jos North",
         "state": "Plateau",
         "geopolitical_zone": "North Central",
+        "senatorial_district": "Plateau North",
         "centroid_lat": 9.9285,
         "centroid_lon": 8.8921,
         "rurality_rate": 0.05,
-        "poverty_headcount_mpi": 0.170,
+        "poverty_headcount_mpi": 0.353,
         "full_immunization_rate": 0.62,
         "anc4_coverage_rate": 0.68,
         "under5_mortality_per_1k": 76.0,
@@ -416,10 +430,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Mangu",
         "state": "Plateau",
         "geopolitical_zone": "North Central",
+        "senatorial_district": "Plateau Central",
         "centroid_lat": 9.5167,
         "centroid_lon": 9.1000,
         "rurality_rate": 0.82,
-        "poverty_headcount_mpi": 0.285,
+        "poverty_headcount_mpi": 0.349,
         "full_immunization_rate": 0.36,
         "anc4_coverage_rate": 0.44,
         "under5_mortality_per_1k": 112.0,
@@ -433,10 +448,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Shendam",
         "state": "Plateau",
         "geopolitical_zone": "North Central",
+        "senatorial_district": "Plateau South",
         "centroid_lat": 8.8833,
         "centroid_lon": 9.5000,
         "rurality_rate": 0.84,
-        "poverty_headcount_mpi": 0.293,
+        "poverty_headcount_mpi": 0.384,
         "full_immunization_rate": 0.32,
         "anc4_coverage_rate": 0.40,
         "under5_mortality_per_1k": 118.0,
@@ -450,10 +466,11 @@ NIGERIA_LGA_DATA: list[dict] = [
         "lga_name": "Pankshin",
         "state": "Plateau",
         "geopolitical_zone": "North Central",
+        "senatorial_district": "Plateau Central",
         "centroid_lat": 9.3333,
         "centroid_lon": 9.4417,
         "rurality_rate": 0.80,
-        "poverty_headcount_mpi": 0.288,
+        "poverty_headcount_mpi": 0.349,
         "full_immunization_rate": 0.34,
         "anc4_coverage_rate": 0.42,
         "under5_mortality_per_1k": 114.0,
@@ -464,10 +481,13 @@ NIGERIA_LGA_DATA: list[dict] = [
     },
 ]
 
-
 def get_lga_indicators_map() -> dict[str, LGAContext]:
     """Returns a dictionary mapping lga_id to LGAContext."""
-    return {item["lga_id"]: LGAContext(**item) for item in NIGERIA_LGA_DATA}
+    field_names = {f.name for f in fields(LGAContext)}
+    return {
+        item["lga_id"]: LGAContext(**{k: v for k, v in item.items() if k in field_names})
+        for item in NIGERIA_LGA_DATA
+    }
 
 
 def save_raw_indicators(output_path: Path):
