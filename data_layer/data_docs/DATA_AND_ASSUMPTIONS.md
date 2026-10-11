@@ -1,9 +1,9 @@
-# PHC Pulse: Data Layer & Assumptions Documentation
+# Repulse: Data Layer & Assumptions Documentation
 ---
 
 ## 1. Executive Summary
 
-The PHC Pulse data layer combines **grounded public health empirical data** (Nigeria Demographic and Health Survey [NDHS], National Bureau of Statistics [NBS] Multidimensional Poverty Index, WHO disease surveillance) with a **calibrated mechanistic simulation engine**.
+The Repulse data layer combines **grounded public health empirical data** (Nigeria Demographic and Health Survey [NDHS], National Bureau of Statistics [NBS] Multidimensional Poverty Index, WHO disease surveillance) with a **calibrated mechanistic simulation engine**.
 
 Rather than treating data as static or assigning stockout labels randomly, the data layer simulates the underlying physical and behavioral processes of Nigeria's primary healthcare delivery:
 1. **Dynamic Stock Flow**: Weekly inventory decreases via patient consumption and increases through logistics resupply. Stockouts emerge naturally when inventory hits zero.

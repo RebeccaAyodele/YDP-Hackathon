@@ -1,5 +1,5 @@
 /*
-PHC Pulse: Supabase PostgreSQL Database Schema
+Repulse: Supabase PostgreSQL Database Schema
 Defines tables, relationships, indexes, and row level security policies.
 */
 

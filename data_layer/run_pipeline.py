@@ -32,7 +32,7 @@ except ImportError:
 
 
 def run_pipeline():
-    print("PHC PULSE: NIGERIAN PRIMARY HEALTHCARE DATA LAYER PIPELINE")
+    print("Repulse: NIGERIAN PRIMARY HEALTHCARE DATA LAYER PIPELINE")
 
     # Output paths
     raw_dir = DATA_LAYER_DIR / "data" / "raw"

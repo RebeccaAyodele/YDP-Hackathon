@@ -1,4 +1,4 @@
-# PHC Pulse: Data Layer Architecture & Pipeline Guide
+# Repulse: Data Layer Architecture & Pipeline Guide
 
 This document details the **data layer**, explaining what each file in the data pipeline does, how data moves through the system, and how the datasets are generated, persisted locally as Parquet, and streamed to Supabase.
 

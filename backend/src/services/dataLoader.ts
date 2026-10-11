@@ -198,7 +198,7 @@ export async function initDataLoader() {
 
   const sourceName = isInitializedFromDb ? '🟢 SUPABASE POSTGRES DATABASE' : '📁 LOCAL JSON/PARQUET FALLBACK';
   console.log('\n' + '='.repeat(60));
-  console.log('  🏥 PHC PULSE DATA INITIALIZATION REPORT');
+  console.log('  🏥 Repulse DATA INITIALIZATION REPORT');
   console.log(`  Source: ${sourceName}`);
   console.log(`  • Facilities Loaded:         ${facilitiesCache.length.toLocaleString()}`);
   console.log(`  • Risk Feature Records:      ${featuresCache.length.toLocaleString()}`);
