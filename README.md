@@ -1,5 +1,5 @@
 # 🏥 Repulse
-### *Predictive Facility Risk Triage, Cascading Disruption Simulation & Early-Warning Platform for Nigeria's Primary Healthcare System*
+### *Predictive Facility Risk Triage, Disruption Simulation & Early-Warning Platform for Nigeria's Primary Healthcare System*
 
 ---
 
@@ -119,18 +119,7 @@ Repulse grounds its simulation in real Nigerian facility registries and national
 
 ### Focal Cohort: 6 States Across All 6 Geopolitical Zones
 
-Values below are taken directly from the NBS 2022 MPI report, Appendix D6 (MPI = Incidence $H$ × Intensity $A$). The national figures are MPI 0.257, $H$ 62.9%, $A$ 40.9%.
-
-| Zone | State | MPI | Incidence $H$ | Intensity $A$ | Context |
-| :--- | :--- | :---: | :---: | :---: | :--- |
-| South West | **Lagos** | `0.101` | 29.4% | 34.3% | Urban commercial benchmark |
-| South South | **Bayelsa** | `0.401` | 88.5% | 45.3% | Riverine Niger Delta terrain |
-| North Central | **Plateau** | `0.365` | 84.0% | 43.5% | Central highland terrain |
-| South East | **Ebonyi** | `0.320` | 78.0% | 41.1% | Agrarian rurality, endemic cholera risks |
-| North West | **Sokoto** | `0.409` | 90.5% | 45.2% | Border Sahelian rurality, lowest immunization baselines |
-| North East | **Yobe** | `0.370` | 83.5% | 44.3% | Conflict recovery infrastructure |
-
-The report notes that Sokoto, Bayelsa, Jigawa, Kebbi, Gombe and Yobe are the poorest states but that their confidence intervals overlap, so their exact ranking is uncertain.
+The  MPI report notes that Sokoto, Bayelsa, Jigawa, Kebbi, Gombe and Yobe are the poorest states but that their confidence intervals overlap, so their exact ranking is uncertain.
 
 **LGA baselines.** The report does not publish LGA-level MPI. Each of the 24 focal LGAs therefore takes the official MPI of its senatorial district (Appendix D7), so LGAs in the same district share a value.
 
