@@ -386,7 +386,7 @@ export default function App() {
       <main className="main-content" style={{ padding: '18px 28px', maxWidth: '1750px', margin: '0 auto', width: '100%', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
         
         {/* KPI Overview Row */}
-        <section className="kpi-grid" style={{
+        <section className="kpi-grid" aria-busy={loading} style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '14px'
@@ -396,7 +396,7 @@ export default function App() {
               Monitored Facilities
             </div>
             <div style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
-              {stats?.total_facilities ?? facilities.length ?? 0}
+              {loading ? <span className="loading-value" role="status">Loading…</span> : (stats?.total_facilities ?? facilities.length)}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
               {currentUser.role === 'STATE' ? `${currentUser.state} State Scope` : '24 Priority LGAs across Nigeria'}
@@ -408,10 +408,10 @@ export default function App() {
               Critical & High Triage
             </div>
             <div style={{ fontSize: '26px', fontWeight: 800, color: '#DC2626', marginTop: '4px' }}>
-              {stats ? (stats.critical_risk_count + stats.high_risk_count) : 0}
+              {loading ? <span className="loading-value" role="status">Loading…</span> : (stats ? stats.critical_risk_count + stats.high_risk_count : '—')}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-              {stats?.critical_risk_count || 0} Critical Priority • {stats?.high_risk_count || 0} High Risk
+              {loading ? 'Loading risk counts…' : `${stats?.critical_risk_count ?? 0} Critical Priority • ${stats?.high_risk_count ?? 0} High Risk`}
             </div>
           </div>
 
@@ -420,7 +420,7 @@ export default function App() {
               Reporting Blackouts
             </div>
             <div style={{ fontSize: '26px', fontWeight: 800, color: '#D97706', marginTop: '4px' }}>
-              {stats?.silent_facilities_count ?? facilities.filter(f => f.is_silent).length ?? 0}
+              {loading ? <span className="loading-value" role="status">Loading…</span> : (stats?.silent_facilities_count ?? facilities.filter(f => f.is_silent).length)}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
               Clinics with ≥3 consecutive missed reports
@@ -432,10 +432,7 @@ export default function App() {
               Cold Chain Readiness
             </div>
             <div style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
-              {coldChainPct}%
-              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)', marginLeft: '6px' }}>
-                ({coldChainReadyCount} clinics)
-              </span>
+              {loading ? <span className="loading-value" role="status">Loading…</span> : <>{coldChainPct}%<span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-muted)', marginLeft: '6px' }}>({coldChainReadyCount} clinics)</span></>}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
               Solar direct-drive vaccine preservation
@@ -559,7 +556,9 @@ export default function App() {
 
               {/* List items (5 per page) */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
-                {paginatedFacilities.length > 0 ? (
+                {loading ? (
+                  <div className="loading-message" role="status">Loading facilities…</div>
+                ) : paginatedFacilities.length > 0 ? (
                   paginatedFacilities.map(fac => {
                     const isSelected = selectedFacility?.facility_id === fac.facility_id;
                     const dotColor = fac.risk_tier === 'CRITICAL' ? '#DC2626' 
@@ -616,12 +615,12 @@ export default function App() {
               {/* List Footer */}
               <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '10px', marginTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
-                  {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredFacilities.length)} of {filteredFacilities.length}
+                  {loading ? 'Updating facility list…' : `${filteredFacilities.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}–${Math.min(currentPage * itemsPerPage, filteredFacilities.length)} of ${filteredFacilities.length}`}
                 </span>
                 <div style={{ display: 'flex', gap: '4px' }}>
                   <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage <= 1}
+                    disabled={loading || currentPage <= 1}
                     className="btn btn-outline"
                     style={{ padding: '3px 8px', fontSize: '11px' }}
                   >
@@ -629,7 +628,7 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage >= totalPages}
+                    disabled={loading || currentPage >= totalPages}
                     className="btn btn-outline"
                     style={{ padding: '3px 8px', fontSize: '11px' }}
                   >
