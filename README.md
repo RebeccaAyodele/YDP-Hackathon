@@ -58,7 +58,7 @@ When a PHC fails, patients move elsewhere. Roughly 60-90% of patients in Nigeria
 
 ### A note on data
 
-Facility locations come from the real [GRID3 Nigeria](https://nigeria.grid3.org/) registry, and area-level indicators are taken from the official NBS 2022 MPI report and the NDHS 2023-24. Weekly stock levels and reporting behaviour are **simulated** from public-health priors, because facility-level stock data is not openly available. The figures in the *Analytical Validation* section therefore describe the simulation's behaviour, not measured real-world outcomes. See [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) for every assumption.
+Facility locations come from the real Nigerian facilities registry, and area-level indicators are taken from the official NBS 2022 MPI report. Weekly stock levels and reporting behaviour are **simulated** from public-health priors, because facility-level stock data is not openly available. The figures in the *Analytical Validation* section therefore describe the simulation's behaviour, not measured real-world outcomes. See [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) for every assumption.
 
 ---
 
