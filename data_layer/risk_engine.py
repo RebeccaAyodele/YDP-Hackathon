@@ -331,10 +331,10 @@ class RiskEngine:
         else:
             edges_df = edges_df_or_list.copy()
 
-        #build lookup maps
+        # build lookup maps
         fac_score_map = dict(zip(df["facility_id"], df["base_risk_score"]))
 
-        #Direct neighboring stress transfer
+        # Direct neighboring stress transfer
         hop1_incoming: dict[str, float] = {fid: 0.0 for fid in fac_score_map}
 
         for _, edge in edges_df.iterrows():
@@ -346,7 +346,7 @@ class RiskEngine:
             transferred = src_stress * overflow_wt * hop1_weight
             hop1_incoming[tgt_id] = hop1_incoming.get(tgt_id, 0.0) + transferred
 
-        #Secondary outward cascade
+        # Secondary outward cascade
         hop2_incoming: dict[str, float] = {fid: 0.0 for fid in fac_score_map}
 
         # Map edges by source for fast traversal

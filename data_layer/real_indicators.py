@@ -458,12 +458,12 @@ NIGERIA_LGA_DATA: list[dict] = [
     },
 ]
 
+
 def get_lga_indicators_map() -> dict[str, LGAContext]:
     """Returns a dictionary mapping lga_id to LGAContext."""
     field_names = {f.name for f in fields(LGAContext)}
     return {
-        item["lga_id"]: LGAContext(**{k: v for k, v in item.items() if k in field_names})
-        for item in NIGERIA_LGA_DATA
+        item["lga_id"]: LGAContext(**{k: v for k, v in item.items() if k in field_names}) for item in NIGERIA_LGA_DATA
     }
 
 

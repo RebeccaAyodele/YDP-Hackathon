@@ -79,20 +79,25 @@ def run_pipeline():
     w52 = sim_df[sim_df["week_number"] == 52]
     inv_by_fac = {}
     for fid, group in w52.groupby("facility_id"):
-        inv_by_fac[fid] = [{
-            "commodity_id": row["commodity_id"],
-            "name": row["commodity_name"],
-            "requires_cold_chain": bool(row["requires_cold_chain"]),
-            "ending_stock": float(row["ending_stock"]),
-            "actual_consumption": float(row["actual_consumption"]),
-            "is_stockout": bool(row["is_stockout"]),
-            "days_stocked_out": int(row["days_stocked_out"]),
-            "unmet_demand": float(row["unmet_demand"]),
-            "cold_chain_breach": bool(row["cold_chain_breach"])
-        } for _, row in group.iterrows()]
+        inv_by_fac[fid] = [
+            {
+                "commodity_id": row["commodity_id"],
+                "name": row["commodity_name"],
+                "requires_cold_chain": bool(row["requires_cold_chain"]),
+                "ending_stock": float(row["ending_stock"]),
+                "actual_consumption": float(row["actual_consumption"]),
+                "is_stockout": bool(row["is_stockout"]),
+                "days_stocked_out": int(row["days_stocked_out"]),
+                "unmet_demand": float(row["unmet_demand"]),
+                "cold_chain_breach": bool(row["cold_chain_breach"]),
+            }
+            for _, row in group.iterrows()
+        ]
     with open(processed_dir / "facility_latest_inventory.json", "w", encoding="utf-8") as f:
         json.dump(inv_by_fac, f, indent=2)
-    print(f"Saved Week 52 inventory snapshot for {len(inv_by_fac)} facilities to {processed_dir.name}/facility_latest_inventory.json")
+    print(
+        f"Saved Week 52 inventory snapshot for {len(inv_by_fac)} facilities to {processed_dir.name}/facility_latest_inventory.json"
+    )
 
     # Simulation Sanity Diagnostics
     reporting_rate = sim_df["report_submitted"].mean()

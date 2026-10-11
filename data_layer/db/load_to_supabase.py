@@ -248,7 +248,12 @@ def load_via_postgres(
     print("\nALL DATASETS SUCCESSFULLY INGESTED INTO SUPABASE POSTGRESQL!")
 
 
-def main(facilities_df: pd.DataFrame | None = None, feat_df: pd.DataFrame | None = None, sim_df: pd.DataFrame | None = None, edges_data: list[dict] | None = None):
+def main(
+    facilities_df: pd.DataFrame | None = None,
+    feat_df: pd.DataFrame | None = None,
+    sim_df: pd.DataFrame | None = None,
+    edges_data: list[dict] | None = None,
+):
     print("PHC PULSE: SUPABASE DATA INGESTION")
     db_url = os.getenv("SUPABASE_URL")
     if db_url:
