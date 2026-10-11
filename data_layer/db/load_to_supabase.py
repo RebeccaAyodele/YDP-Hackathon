@@ -250,12 +250,12 @@ def load_via_postgres(
 
 def main():
     print("PHC PULSE: SUPABASE DATA INGESTION")
-    db_url = os.getenv("DATABASE_URL")
+    db_url = os.getenv("SUPABASE_URL")
     if db_url and "YOUR_PASSWORD" not in db_url:
         load_via_postgres(db_url)
     else:
         print("\n[Configuration Required]")
-        print("Please configure DATABASE_URL in your .env file.")
+        print("Please configure SUPABASE_URL in your .env file.")
         sys.exit(1)
 
 
