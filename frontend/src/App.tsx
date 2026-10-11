@@ -299,7 +299,7 @@ export default function App() {
   return (
     <div className="app-container">
       {/* Header */}
-      <header style={{
+      <header className="app-header" style={{
         background: '#FFFFFF',
         borderBottom: '1px solid var(--border-light)',
         padding: '12px 28px',
@@ -310,7 +310,7 @@ export default function App() {
         top: 0,
         zIndex: 50,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div className="header-brand" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
             width: '34px',
             height: '34px',
@@ -338,9 +338,9 @@ export default function App() {
         </div>
 
         {/* View Switcher & User Account */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {/* Main View Toggle Buttons */}
-          <div style={{ display: 'flex', background: '#F1F5F9', padding: '3px', borderRadius: '6px' }}>
+          <div className="header-view-switcher" style={{ display: 'flex', background: '#F1F5F9', padding: '3px', borderRadius: '6px' }}>
             <button
               onClick={() => setMainViewMode('map')}
               className={`btn ${mainViewMode === 'map' ? 'btn-primary' : 'btn-outline'}`}
@@ -384,10 +384,10 @@ export default function App() {
       </header>
 
       {/* Main Workspace */}
-      <main style={{ padding: '18px 28px', maxWidth: '1750px', margin: '0 auto', width: '100%', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <main className="main-content" style={{ padding: '18px 28px', maxWidth: '1750px', margin: '0 auto', width: '100%', flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
         
         {/* KPI Overview Row */}
-        <section style={{
+        <section className="kpi-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '14px'
@@ -445,7 +445,7 @@ export default function App() {
         </section>
 
         {/* Filter Controls Bar */}
-        <div style={{
+        <div className="filter-bar" style={{
           display: 'flex',
           gap: '10px',
           alignItems: 'center',
@@ -513,7 +513,7 @@ export default function App() {
 
         {/* VIEW 1: MAP & TRIAGE QUEUE */}
         {mainViewMode === 'map' && (
-          <div style={{
+          <div className="workspace-grid" style={{
             display: 'grid',
             gridTemplateColumns: '320px 1fr 440px',
             gap: '14px',
@@ -522,7 +522,7 @@ export default function App() {
           }}>
             
             {/* Column 1: Triage List (5 items per page) */}
-            <div className="panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div className="panel triage-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', height: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <div>
                   <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)' }}>
@@ -642,7 +642,7 @@ export default function App() {
             </div>
 
             {/* Column 2: Geospatial Map */}
-            <div style={{ height: '100%' }}>
+            <div className="facility-map-wrap" style={{ height: '100%' }}>
               <FacilityMap
                 facilities={filteredFacilities}
                 selectedFacility={selectedFacility}
@@ -653,7 +653,7 @@ export default function App() {
             </div>
 
             {/* Column 3: Tabbed Facility Dossier */}
-            <div className="panel" style={{ padding: '18px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div className="panel facility-dossier" style={{ padding: '18px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {selectedFacility ? (
                 <>
                   {/* Header Profile */}
@@ -930,10 +930,10 @@ export default function App() {
 
         {/* VIEW 2: VISUAL ANALYTICS (RECHARTS BAR CHARTS POWERED DIRECTLY BY THE DATASET) */}
         {mainViewMode === 'analytics' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="analytics-view" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             
             {/* Analytics Sub-Navigation Bar */}
-            <div style={{
+            <div className="analytics-nav" style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
