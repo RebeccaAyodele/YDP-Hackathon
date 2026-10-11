@@ -249,7 +249,7 @@ def load_via_postgres(
 
 
 def main():
-    print("PHC PULSE: SUPABASE DATA INGESTION")
+    print("Repulse: SUPABASE DATA INGESTION")
     db_url = os.getenv("DATABASE_URL")
     if db_url and "YOUR_PASSWORD" not in db_url:
         load_via_postgres(db_url)

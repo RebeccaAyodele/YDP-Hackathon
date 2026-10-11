@@ -34,7 +34,7 @@ app.use('/api/simulation', simulationRoutes);
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({
     status: 'ok',
-    service: 'PHC Pulse TypeScript API',
+    service: 'Repulse TypeScript API',
     data_source: getDataLoaderStatus(),
     timestamp: new Date().toISOString()
   });
@@ -46,7 +46,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 PHC Pulse API running on http://localhost:${PORT}`);
+  console.log(`\n🚀 Repulse API running on http://localhost:${PORT}`);
   console.log(`📊 Data Layer Source: ${process.env.DATA_LAYER_PROCESSED_DIR || '../data_layer/data/processed'}\n`);
 });
 

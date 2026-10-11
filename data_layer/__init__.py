@@ -1,5 +1,5 @@
 """
-PHC Pulse - Data Layer Package
+Repulse - Data Layer Package
 Core data simulation, spatial network modeling, and risk triage feature engineering.
 """
 

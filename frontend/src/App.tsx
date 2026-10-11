@@ -325,7 +325,7 @@ export default function App() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-                PHC Pulse
+                Repulse
               </span>
               <span className="badge-clean badge-blue">
                 Risk Engine
@@ -1221,7 +1221,7 @@ export default function App() {
                   </div>
                   <div style={{ fontSize: '12px', color: 'var(--text-body)', lineHeight: '1.5' }}>
                     When a clinic misses reports, standard dashboards assume stocks are stable. 
-                    The <strong>PHC Pulse Risk Engine</strong> implements time-decay penalty:
+                    The <strong>Repulse Risk Engine</strong> implements time-decay penalty:
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

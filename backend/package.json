@@ -1,7 +1,7 @@
 {
-  "name": "phc-pulse-backend",
+  "name": "repulse-backend",
   "version": "1.0.0",
-  "description": "TypeScript Express backend for PHC Pulse - Facility Risk Triage for Nigeria's Primary Healthcare Centres",
+  "description": "TypeScript Express backend for Repulse - Facility Risk Triage for Nigeria's Primary Healthcare Centres",
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
