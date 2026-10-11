@@ -22,9 +22,14 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Initialize data layer from Supabase database (with automatic local fallback)
-initDataLoader().catch(err => {
+// Initialize data before allowing API requests to reach handlers. Otherwise an
+// early request can cache an empty scored-facilities list while Supabase loads.
+const dataInitialization = initDataLoader().catch(err => {
   console.warn('[Server] Data initialization notice:', err.message);
+});
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  void dataInitialization.then(() => next()).catch(next);
 });
 
 app.use('/api/facilities', facilityRoutes);

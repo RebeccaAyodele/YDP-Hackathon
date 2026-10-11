@@ -223,3 +223,200 @@ body {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+.loading-value {
+  color: var(--text-muted);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.loading-message {
+  margin: auto;
+  padding: 24px 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+#root,
+.app-container {
+  width: 100%;
+  min-width: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.header-brand,
+.header-actions,
+.main-content,
+.workspace-grid,
+.analytics-view,
+.analytics-grid {
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .workspace-grid {
+    grid-template-columns: minmax(250px, 0.8fr) minmax(0, 1.2fr) !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .triage-panel,
+  .facility-map-wrap {
+    min-height: 560px;
+  }
+
+  .facility-dossier {
+    grid-column: 1 / -1;
+    height: auto !important;
+    max-height: 680px;
+  }
+
+  .analytics-view [style*="grid-template-columns"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-header {
+    position: static !important;
+    align-items: stretch !important;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px !important;
+  }
+
+  .header-brand {
+    align-items: flex-start !important;
+  }
+
+  .header-brand > div:last-child > div:last-child {
+    max-width: 260px;
+    font-size: 11px !important;
+  }
+
+  .header-actions {
+    align-items: stretch !important;
+    flex-wrap: wrap;
+  }
+
+  .header-view-switcher {
+    flex: 1 1 100%;
+  }
+
+  .header-view-switcher .btn {
+    flex: 1 1 0;
+    justify-content: center;
+    padding: 7px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .header-actions > .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .main-content {
+    padding: 14px 12px !important;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .kpi-grid > .panel {
+    padding: 12px !important;
+    min-width: 0;
+  }
+
+  .filter-bar {
+    flex-wrap: wrap;
+    padding: 10px !important;
+  }
+
+  .filter-bar > div:first-child {
+    flex-basis: 100% !important;
+  }
+
+  .filter-bar select,
+  .filter-bar > button {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+  }
+
+  .workspace-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .triage-panel {
+    min-height: 0;
+    height: 390px !important;
+  }
+
+  .facility-map-wrap {
+    height: min(65vh, 520px) !important;
+    min-height: 360px;
+  }
+
+  .facility-dossier {
+    grid-column: auto;
+    max-height: none;
+    padding: 14px !important;
+  }
+
+  .analytics-nav {
+    align-items: stretch !important;
+    flex-direction: column;
+    padding: 8px !important;
+  }
+
+  .analytics-nav > div:first-child {
+    max-width: calc(100vw - 44px);
+    padding-bottom: 4px;
+  }
+
+  .analytics-nav .tab-btn {
+    flex: 0 0 auto;
+  }
+
+  .analytics-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .analytics-grid > .panel {
+    padding: 14px !important;
+    min-width: 0;
+  }
+
+  .analytics-view [style*="height: 360px"],
+  .analytics-view [style*="height: 340px"] {
+    height: 280px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .kpi-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .header-view-switcher .btn {
+    gap: 4px;
+    padding-inline: 5px !important;
+    font-size: 10px !important;
+  }
+
+  .filter-bar select,
+  .filter-bar > button {
+    flex-basis: 100%;
+  }
+}

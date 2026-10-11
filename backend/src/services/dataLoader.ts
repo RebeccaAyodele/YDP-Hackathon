@@ -16,6 +16,30 @@ let featuresMapCache: Map<string, FacilityFeatures> = new Map();
 let inventoryMapCache: Map<string, FacilityInventoryItem[]> = new Map();
 let isInitializedFromDb = false;
 
+async function fetchAllSupabaseRows(
+  tableName: string,
+  filter?: { column: string; value: string | number }
+): Promise<{ data: any[] | null; error: any }> {
+  if (!supabase) return { data: null, error: new Error('Supabase client is not configured') };
+
+  const pageSize = 1000;
+  const rows: any[] = [];
+
+  for (let from = 0; ; from += pageSize) {
+    let query: any = supabase.from(tableName).select('*');
+    if (filter) query = query.eq(filter.column, filter.value);
+
+    const { data, error } = await query.range(from, from + pageSize - 1);
+    if (error) return { data: null, error };
+
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+
+  return { data: rows, error: null };
+}
+
 export async function loadFromSupabase(): Promise<boolean> {
   if (!supabase) {
     console.log('[DataLoader] Supabase client not configured. Skipping database fetch.');
@@ -26,10 +50,7 @@ export async function loadFromSupabase(): Promise<boolean> {
     console.log('[DataLoader] Fetching datasets from Supabase database...');
 
     // 1. Fetch Facilities
-    const { data: facData, error: facErr } = await supabase
-      .from('facilities')
-      .select('*')
-      .limit(10000);
+    const { data: facData, error: facErr } = await fetchAllSupabaseRows('facilities');
 
     if (facErr || !facData || facData.length === 0) {
       console.warn('[DataLoader] Could not fetch facilities from Supabase:', facErr?.message);
@@ -39,10 +60,7 @@ export async function loadFromSupabase(): Promise<boolean> {
     console.log(`[DataLoader:DB] Loaded ${facilitiesCache.length} facilities from Supabase`);
 
     // 2. Fetch Features
-    const { data: featData, error: featErr } = await supabase
-      .from('facility_features')
-      .select('*')
-      .limit(10000);
+    const { data: featData, error: featErr } = await fetchAllSupabaseRows('facility_features');
 
     if (featData && featData.length > 0) {
       featuresCache = featData as FacilityFeatures[];
@@ -51,10 +69,7 @@ export async function loadFromSupabase(): Promise<boolean> {
     }
 
     // 3. Fetch Graph Edges
-    const { data: edgeData } = await supabase
-      .from('facility_graph_edges')
-      .select('*')
-      .limit(20000);
+    const { data: edgeData } = await fetchAllSupabaseRows('facility_graph_edges');
 
     if (edgeData && edgeData.length > 0) {
       edgesCache = edgeData as GraphEdge[];
@@ -62,20 +77,14 @@ export async function loadFromSupabase(): Promise<boolean> {
     }
 
     // 4. Fetch Commodities
-    const { data: commData } = await supabase
-      .from('essential_commodities')
-      .select('*')
-      .limit(1000);
+    const { data: commData } = await fetchAllSupabaseRows('essential_commodities');
 
     if (commData && commData.length > 0) {
       rawCommoditiesCache = commData;
     }
 
     // 5. Fetch LGA Indicators
-    const { data: lgaData } = await supabase
-      .from('nigeria_lga_indicators')
-      .select('*')
-      .limit(1000);
+    const { data: lgaData } = await fetchAllSupabaseRows('nigeria_lga_indicators');
 
     if (lgaData && lgaData.length > 0) {
       rawLgaIndicatorsCache = {};
@@ -85,11 +94,10 @@ export async function loadFromSupabase(): Promise<boolean> {
     }
 
     // 6. Fetch Week 52 Stock Reports for Latest Inventory Snapshot
-    const { data: week52Reports } = await supabase
-      .from('weekly_stock_reports')
-      .select('*')
-      .eq('week_number', 52)
-      .limit(50000);
+    const { data: week52Reports } = await fetchAllSupabaseRows('weekly_stock_reports', {
+      column: 'week_number',
+      value: 52,
+    });
 
     if (week52Reports && week52Reports.length > 0) {
       inventoryMapCache = new Map();

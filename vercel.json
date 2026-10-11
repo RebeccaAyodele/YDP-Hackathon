@@ -3,8 +3,8 @@
   "services": {
     "backend": {
       "root": "backend",
-      "framework": "express",
-      "entrypoint": "src/server.mts"
+      "runtime": "container",
+      "entrypoint": "Dockerfile.vercel"
     },
     "frontend": {
       "root": "frontend",
