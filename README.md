@@ -1,14 +1,5 @@
 # 🏥 Repulse
 ### *Predictive Facility Risk Triage, Cascading Disruption Simulation & Early-Warning Platform for Nigeria's Primary Healthcare System*
-
-[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18.3-61dafb.svg)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-6.1-646cff.svg)](https://vitejs.dev/)
-[![Express](https://img.shields.io/badge/Express-4.21-lightgrey.svg)](https://expressjs.com/)
-[![Supabase](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-3ECF8E.svg)](https://supabase.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
 ---
 
 ## 📑 Table of Contents
@@ -37,6 +28,9 @@
 ## 📌 Overview
 
 **Repulse** is an early-warning platform for Nigeria's Primary Healthcare Centres (PHCs). It predicts facility-level stockouts, staffing collapses and patient overflow *before* they become crises, and it treats a facility that stops reporting as a warning sign rather than missing data.
+
+# Demo Video
+https://youtu.be/FA4qRQwToYo
 
 ### The problem
 
@@ -160,8 +154,7 @@ The system tracks 8 vital medicines and vaccines under Nigeria's Integrated Mana
 - **Language**: Python 3.10+
 - **Data Engineering**: `pandas`, `numpy`, `pyarrow` (columnar Parquet storage)
 - **Machine Learning**: `scikit-learn` (`GradientBoostingRegressor`), `scipy`
-- **Network Graphing**: `networkx` (Spherical Haversine distance computations)
-- **Database Loaders**: `psycopg2-binary`, `sqlalchemy` (PostgreSQL / Supabase batching)
+- **Database Loaders**: `psycopg2-binary` (Supabase batching)
 - **Code Quality**: `ruff`
 - **Detailed Documentation**: [`data_layer/data_docs/`](data_layer/data_docs)
 
@@ -268,7 +261,7 @@ pip install -r data_layer/requirements.txt
 python data_layer/run_pipeline.py
 
 # Optional Flags:
-# python data_layer/run_pipeline.py --force     # Recompute all 537k records from scratch
+# python data_layer/run_pipeline.py --force     # Recompute all 500k+ records from scratch
 # python data_layer/run_pipeline.py --skip-db   # Skip Supabase cloud database loading
 ```
 
@@ -353,8 +346,6 @@ These checks run during pipeline execution on the **simulated** facility data. T
 | **Data & Assumptions Guide** | [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) | Public health evidence base, NBS 2022 MPI values, seasonal profiles, and Markov decay formulas. |
 | **Data Architecture & Pipeline** | [`data_layer/data_docs/DATA_ARCHITECTURE.md`](data_layer/data_docs/DATA_ARCHITECTURE.md) | Technical blueprint of datasets, Parquet columnar schemas, and Supabase database ingestion routines. |
 | **Official NBS 2022 MPI Survey** | [`data_layer/data_docs/NIGERIA MULTIDIMENSIONAL POVERTY INDEX SURVEY RESULTS 2022 (1).pdf`](data_layer/data_docs/NIGERIA%20MULTIDIMENSIONAL%20POVERTY%20INDEX%20SURVEY%20RESULTS%202022%20(1).pdf) | Official survey publication from the National Bureau of Statistics (NBS). |
-| **Implementation Guide** | [`.docs/PHC_Pulse_Implementation_Guide.pdf`](.docs/PHC_Pulse_Implementation_Guide.pdf) | Original architectural and hackathon implementation blueprint. |
-
 ---
 
 ## 👥 Team & Acknowledgements
