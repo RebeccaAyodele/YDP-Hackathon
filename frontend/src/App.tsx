@@ -65,7 +65,6 @@ const DEMO_PRESET_USERS: AuthUser[] = [
   { username: 'Bayelsa_Admin', role: 'STATE', state: 'Bayelsa', displayName: 'Bayelsa State Primary Health Care Board' },
   { username: 'Plateau_Admin', role: 'STATE', state: 'Plateau', displayName: 'Plateau State Primary Health Care Board' },
   { username: 'Ebonyi_Admin', role: 'STATE', state: 'Ebonyi', displayName: 'Ebonyi State Primary Health Care Agency' },
-  { username: 'Anambra_Admin', role: 'STATE', state: 'Anambra', displayName: 'Anambra State Primary Health Care Agency' },
 ];
 
 export default function App() {
@@ -187,7 +186,7 @@ export default function App() {
     const trimmed = usernameToLogin.trim();
     if (!trimmed) return;
 
-    const matchedState = ['Lagos', 'Sokoto', 'Yobe', 'Bayelsa', 'Plateau', 'Ebonyi', 'Anambra'].find(
+    const matchedState = ['Lagos', 'Sokoto', 'Yobe', 'Bayelsa', 'Plateau', 'Ebonyi'].find(
       s => trimmed.toLowerCase().startsWith(s.toLowerCase())
     );
 
@@ -484,7 +483,6 @@ export default function App() {
                 <option value="Plateau">Plateau</option>
                 <option value="Bayelsa">Bayelsa</option>
                 <option value="Lagos">Lagos</option>
-                <option value="Anambra">Anambra</option>
               </>
             )}
           </select>
