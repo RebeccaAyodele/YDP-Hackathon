@@ -146,7 +146,6 @@ The simulation models Nigeria's two distinct seasons with geographic differentia
 
 ```
                      NIGERIA'S SEASONS: REGIONAL DYNAMICS
-═════════════════════════════════════════════════════════════════════════════════
 1. RAINY SEASON (Malaria ACTs, RDTs, ORS+Zinc Diarrhoea)
    • South (SW, SS, SE): March/April to October/November (Weeks 12 to 46)
      - Two Peaks (Bimodal): Heaviest in June-July (Week 26), August break floor,
@@ -158,8 +157,7 @@ The simulation models Nigeria's two distinct seasons with geographic differentia
    • South (SW, SS, SE): December to February (Weeks 49-52 and Weeks 1-8)
      - Milder, shorter, less intense - felt mainly Dec-Jan.
    • North (NW, NE, NC): November to March (Weeks 45-52 and Weeks 1-13)
-     - Earlier, longer, more severe dry dusty Sahara trade winds (centered in Jan).
-═════════════════════════════════════════════════════════════════════════════════
+     - Earlier, longer, more severe dry dusty Sahara trade winds (centered in Jan)
 ```
 
 ### 5.2 Stock Flow Equation

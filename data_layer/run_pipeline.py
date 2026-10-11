@@ -97,8 +97,8 @@ def run_pipeline():
     # Simulation Sanity Diagnostics
     reporting_rate = sim_df["report_submitted"].mean()
     stockout_rate = sim_df["is_stockout"].mean()
-    print(f"  Overall report submission rate: {reporting_rate:.1%}")
-    print(f"  Overall weekly stockout event rate: {stockout_rate:.1%}")
+    print(f"Overall report submission rate: {reporting_rate:.1%}")
+    print(f"Overall weekly stockout event rate: {stockout_rate:.1%}")
 
     # Spatial Adjacency Network Builder (Cascading Risk Layer Graph)
     print("\nBuilding Facility Spatial Network (Haversine k-NN).........")

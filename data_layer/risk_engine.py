@@ -22,7 +22,7 @@ if str(DATA_LAYER_DIR) not in sys.path:
 PROCESSED_DIR = DATA_LAYER_DIR / "data" / "processed"
 MODEL_DIR = DATA_LAYER_DIR / "data" / "models"
 
-# 26 Core Predictor Features mapped from Repulse Guide Section 4.1
+
 FEATURE_COLUMNS = [
     # Reporting dynamics (silence treated as primary signal)
     "weeks_since_last_report",
@@ -245,7 +245,7 @@ def generate_explainable_reasons(row: pd.Series | dict[str, Any]) -> tuple[str, 
             )
         )
 
-    # Summary synthesis
+    # Summary
     if reasons:
         summary = " • ".join(reasons[:3])
     else:
@@ -255,8 +255,6 @@ def generate_explainable_reasons(row: pd.Series | dict[str, Any]) -> tuple[str, 
 
 
 class RiskEngine:
-    """Machine learning and spatial cascading risk scoring engine."""
-
     def __init__(self, random_state: int = 42):
         self.random_state = random_state
         self.model: GradientBoostingRegressor | None = None
@@ -273,7 +271,6 @@ class RiskEngine:
         X = features_df[self.feature_names].fillna(0.0)
         y = features_df[TARGET_COLUMN].values
 
-        # Lightweight, fast gradient boosted tree ensemble
         self.model = GradientBoostingRegressor(
             n_estimators=100,
             learning_rate=0.08,
@@ -318,13 +315,12 @@ class RiskEngine:
         hop2_weight: float = 0.18,
     ) -> pd.DataFrame:
         """
-        Propagates patient redirection stress across the facility network (Repulse Guide Section 5).
+        Propagates patient redirection stress across the facility network
 
         When a facility runs short of stock or staff, patients travel to neighboring facilities.
-        This function:
-        1. Distributes Hop 1 stress from each source facility to its directed neighbors using overflow_weight.
-        2. Distributes Hop 2 secondary stress outward from Hop 1 receivers.
-        3. Computes adjusted_cascading_score and flags 'is_hidden_risk' facilities.
+            Distributes Hop 1 stress from each source facility to its directed neighbors using overflow_weight.
+            Distributes Hop 2 secondary stress outward from Hop 1 receivers.
+            Computes adjusted_cascading_score and flags 'is_hidden_risk' facilities.
         """
         df = facilities_df.copy()
         if "base_risk_score" not in df.columns:
@@ -335,10 +331,10 @@ class RiskEngine:
         else:
             edges_df = edges_df_or_list.copy()
 
-        # Build lookup maps
+        #build lookup maps
         fac_score_map = dict(zip(df["facility_id"], df["base_risk_score"]))
 
-        # --- HOP 1: Direct neighboring stress transfer ---
+        #Direct neighboring stress transfer
         hop1_incoming: dict[str, float] = {fid: 0.0 for fid in fac_score_map}
 
         for _, edge in edges_df.iterrows():
@@ -350,7 +346,7 @@ class RiskEngine:
             transferred = src_stress * overflow_wt * hop1_weight
             hop1_incoming[tgt_id] = hop1_incoming.get(tgt_id, 0.0) + transferred
 
-        # --- HOP 2: Secondary outward cascade ---
+        #Secondary outward cascade
         hop2_incoming: dict[str, float] = {fid: 0.0 for fid in fac_score_map}
 
         # Map edges by source for fast traversal
@@ -373,7 +369,6 @@ class RiskEngine:
                 hop2_transferred = stress1 * w * hop2_weight
                 hop2_incoming[tgt_id] = hop2_incoming.get(tgt_id, 0.0) + hop2_transferred
 
-        # --- Compute final adjusted scores & hidden risk flags ---
         total_cascading_deltas = []
         adjusted_scores = []
         is_hidden_risks = []

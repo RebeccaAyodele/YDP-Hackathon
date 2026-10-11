@@ -9,7 +9,7 @@ class CommoditySpec:
     requires_cold_chain: bool
     unit: str
     base_weekly_per_1k: float  # Base weekly consumption per 1,000 catchment pop
-    seasonal_peak: str  # "rainy", "harmattan" (or "dry"), or "none"
+    seasonal_peak: str  # "rainy", "harmattan" (or "dry")
     seasonal_multiplier: float  # Peak amplitude multiplier
     criticality_score: float  # 1.0 (standard) to 3.0 (life-critical zero-tolerance)
     description: str

@@ -23,8 +23,8 @@ class LGAContext:
     senatorial_district: str = ""
 
 
-# GEO POLITICAL ANDSTATE MPI are just for reference sake, it is not used in the simulation
-# NBS 2022 MPI by geopolitical zone (Appendix D5)
+# GEO POLITICAL ANDSTATE MPI are just for reference sake
+# NBS 2022 MPI by geopolitical zone
 GEOPOLITICAL_ZONE_MPI_2022: dict[str, dict] = {
     "National": {"mpi": 0.257, "incidence_h": 0.629, "intensity_a": 0.409, "poor_people_million": 132.92},
     "North Central": {"mpi": 0.272, "incidence_h": 0.663, "intensity_a": 0.410, "poor_people_million": 20.19},
@@ -46,7 +46,7 @@ STATE_MPI_2022: dict[str, dict] = {
 }
 
 
-# The report does not publish LGA-level MPI, so all LGAs in a district share its value.
+# The NBS 2022 MPI report does not publish LGA-level MPI, so all LGAs in a district share its value.
 NIGERIA_LGA_DATA: list[dict] = [
     {
         "lga_id": "lagos_ikeja",
