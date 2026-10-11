@@ -2,11 +2,11 @@
   "name": "repulse-backend",
   "version": "1.0.0",
   "description": "TypeScript Express backend for Repulse - Facility Risk Triage for Nigeria's Primary Healthcare Centres",
-  "main": "src/server.ts",
+  "main": "src/server.mts",
   "type": "module",
   "scripts": {
-    "start": "node dist/server.js",
-    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.mjs",
+    "dev": "tsx watch src/server.mts",
     "build": "tsc"
   },
   "dependencies": {
