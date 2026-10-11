@@ -1,5 +1,6 @@
 # 🏥 Repulse
 ### *Predictive Facility Risk Triage, Cascading Disruption Simulation & Early-Warning Platform for Nigeria's Primary Healthcare System*
+
 ---
 
 ## 📑 Table of Contents
@@ -20,7 +21,6 @@
 - [Key Dashboard Capabilities](#-key-dashboard-capabilities)
 - [Analytical Validation & Findings (Simulated)](#-analytical-validation--findings-simulated)
 - [Documentation Index](#-documentation-index)
-- [Team & Acknowledgements](#-team--acknowledgements)
 - [License](#-license)
 
 ---
@@ -356,18 +356,19 @@ These checks run during pipeline execution on the **simulated** facility data. T
 | **Official NBS 2022 MPI Survey** | [`data_layer/data_docs/NIGERIA MULTIDIMENSIONAL POVERTY INDEX SURVEY RESULTS 2022 (1).pdf`](data_layer/data_docs/NIGERIA%20MULTIDIMENSIONAL%20POVERTY%20INDEX%20SURVEY%20RESULTS%202022%20(1).pdf) | Official survey publication from the National Bureau of Statistics (NBS). |
 ---
 
+## Future Improvement
+- Implement a function to allow doctors upload weekly reports
+- Improve frontend for faster data rendering
+- Implement a home page and better authentication
+- Improve Better assumption on the data points
+- 
 ## 👥 Team & Acknowledgements
 
-### Project Team
+### Project Team (Data Divas)
 * **Ayodele Rebecca** — Software Engineer
 * **Ogechukwu Okoli** — Data Engineer
 
-### Acknowledgements & Data Partners
-Special thanks to:
-* **GRID3 Nigeria** for open-access health facility geographic data.
-* **National Bureau of Statistics (NBS)** for the 2022 Multidimensional Poverty Index dataset.
-* **National Population Commission (NPC)** for the Nigeria Demographic and Health Survey.
-* **National Primary Health Care Development Agency (NPHCDA)** for primary healthcare delivery benchmarks.
+Submission for the YDP Datathon 1.0
 
 ---
 
