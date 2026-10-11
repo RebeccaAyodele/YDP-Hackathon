@@ -30,8 +30,6 @@ Following the **NBS 2022 Multidimensional Poverty Index (MPI)** ranking and **GR
 
 ### Official NBS 2022 Multidimensional Poverty Index (MPI) Benchmarks
 
-In the Alkire-Foster methodology ($MPI = H \times A$), **there is no MPI of 0.90**. A value of 0.90 represents extreme headcount incidence ($H$), whereas the composite MPI index in Nigeria strictly ranges between **0.026** (Lagos) and **0.562** (Yobe), with a national average of **0.257**.
-
 #### By Geopolitical Zone (NBS 2022)
 | Geopolitical Zone | MPI ($H \times A$) | Incidence ($H\%$) | Intensity ($A\%$) | Poor People (Million) |
 |---|:---:|:---:|:---:|:---:|
@@ -43,15 +41,15 @@ In the Alkire-Foster methodology ($MPI = H \times A$), **there is no MPI of 0.90
 | **South South** | 0.250 | 62.6% | 39.8% | 19.66 |
 | **South West** | 0.151 | 40.0% | 37.7% | 16.27 |
 
-#### Focal States (NBS 2022)
+#### Focal States
 | State | Zone | MPI Value | Incidence ($H\%$) | Intensity ($A\%$) | Official Classification |
 |---|---|:---:|:---:|:---:|---|
-| **Lagos** | South West | **0.026** | 5.9% | 44.3% | Least poor |
-| **Bayelsa** | South South | **0.186** | 40.6% | 45.8% | Moderately poor |
-| **Plateau** | North Central | **0.259** | 55.6% | 46.6% | Moderately poor |
-| **Ebonyi** | South East | **0.380** | 73.0% | 52.1% | Very poor |
-| **Sokoto** | North West | **0.536** | 87.9% | 61.0% | Extremely poor |
-| **Yobe** | North East | **0.562** | 89.5% | 62.8% | Extremely poor |
+| **Lagos** | South West | **0.101** | 29.4% | 34.3% | Least poor |
+| **Plateau** | North Central | **0.365** | 84.0% | 43.5% | Very poor |
+| **Bayelsa** | South South | **0.401** | 88.5% | 45.3% | Extremely poor |
+| **Ebonyi** | South East | **0.320** | 78.0% | 41.1% | Moderately poor |
+| **Sokoto** | North West | **0.409** | 90.5% | 45.2% | Extremely poor |
+| **Yobe** | North East | **0.370** | 83.5% | 44.3% | Extremely poor |
 
 ---
 
@@ -62,7 +60,7 @@ In the Alkire-Foster methodology ($MPI = H \times A$), **there is no MPI of 0.90
 | **LGA Boundaries & Centroids** | **Real** | 24 LGAs across 6 representative states. | [GRID3 Nigeria GeoPortal](https://nigeria.grid3.org/) |
 | **Multidimensional Poverty Index (MPI)** | **Real** | NBS Nigeria Multidimensional Poverty Index Survey (2022). | [National Bureau of Statistics (NBS)](https://nigerianstat.gov.ng) |
 | **Maternal & Child Health Indicators** | **Real** | NDHS: Antenatal Care (ANC 4+), Full Immunization Coverage (FIC), Under-5 Mortality per 1,000 live births. | [National Population Commission (NPC)](https://nationalpopulation.gov.ng) |
-| **Facility Names, GPS Coordinates & Wards** | **Real Empirical Data** | Direct programmatic ingestion of 1,292 public primary facilities from the official GRID3 Nigeria dataset (`GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv`). Captures exact GPS latitudes, longitudes, NHFR facility codes, and ward boundaries. | [GRID3 Health Facility Database](https://nigeria.grid3.org/) |
+| **Facility Names, GPS Coordinates & Wards** | **Real Empirical Data** | Direct programmatic ingestion of 1,292 public primary facilities from the official GRID3 Nigeria dataset (`GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv`). Captures exact GPS latitudes, longitudes, NHFR facility codes, and ward boundaries. |I acn't really remeber the actual website i got this data as it was downloaded when I was looking for something to work with for Datafest 2025 |
 | **Facility Tiering & Staffing Guidelines** | **Real Benchmark** | NPHCDA Minimum Standards for Primary Health Care in Nigeria. | [Nigeria Governors' Forum / NPHCDA Repository](http://ngfrepository.org.ng:8080/jspui/handle/123456789/3153) |
 | **Weekly Stock Dynamics** | **Simulated (Mechanistic)** | Micro-simulation based on catchment population, regional disease seasonality (South vs North), and logistics resupply cycles. | Section 5 below |
 | **Weekly Reporting Events** | **Simulated (Behavioral)** | Stochastic reporting model with compounding Markov decay conditioned on connectivity, staffing, and facility crisis status. | Section 5.4 below |
