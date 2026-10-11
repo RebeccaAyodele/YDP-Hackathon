@@ -32,6 +32,9 @@
 # Demo Video
 https://youtu.be/FA4qRQwToYo
 
+# ONE PAGE DOCUMENT 
+https://docs.google.com/document/d/1a-uBrx3lPeRrS-VwadepzVoKbJ6Slv6_Evt9jc6b_NI/edit?usp=sharing
+
 ### The problem
 
 PHCs are meant to be the first point of care for most Nigerians, but the system is under severe strain:
