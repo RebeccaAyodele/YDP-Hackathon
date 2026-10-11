@@ -101,7 +101,7 @@ Repulse is structured into four decoupled, production-grade layers:
 
 ---
 
-## 🔬 Data Sources & Public Health Calibration
+## Data Sources & Public Health Calibration
 
 Repulse grounds its simulation in real Nigerian facility registries and national surveys wherever they exist (see detailed breakdown in [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md)). Facility-level stock and reporting behaviour is simulated on top of them.
 
@@ -314,14 +314,22 @@ npm run dev
 - **Federal Ministry of Health (National Admin)**: High-altitude macro view across all 6 geopolitical zones, state risk comparisons, national stockout rates, and aggregated silence statistics.
 - **State Primary Health Care Agency Admins**: Immediate drill-down into local state facilities (e.g., Lagos, Sokoto, Yobe, Bayelsa, Plateau, Ebonyi) with localized LGA rankings and urgent action items.
 
+<img width="1920" height="943" alt="image" src="https://github.com/user-attachments/assets/7641d39c-472b-4412-bd64-59e0984d17ea" />
+
+
 ### 2. Interactive GIS Risk Map
 - **Color-Coded Risk Triage**: Real-time visualization of facilities categorized into `LOW`, `MEDIUM`, `HIGH`, and `CRITICAL` risk tiers.
 - **Compounding Silence Pulse Rings**: Distinct animated radar pulses highlight facilities suffering from reporting blackouts ($\ge 3$ consecutive weeks).
 - **Proximity Network Overlay**: Visualizes spatial edges connecting neighboring health centres to reveal potential overflow vectors.
+- 
+<img width="890" height="647" alt="image" src="https://github.com/user-attachments/assets/0fe16e0e-9ae4-4b29-94c4-4e67432da37b" />
 
 ### 3. Detailed Facility Dossier & Explainability
 - **Clinical Risk Factor Breakdown**: Clear, human-readable explanations behind every risk score (e.g., *"4-week reporting silence (+25 pts), no functional cold chain (+15 pts), severe ACT stockout in neighboring facility (+10 pts)"*).
 - **Weekly Inventory Inspection**: Status for all 8 monitored commodities, days of stock remaining, unmet demand, and cold-chain temperature breach alerts.
+
+<img width="1920" height="874" alt="image" src="https://github.com/user-attachments/assets/41063880-05bb-4ae9-b13e-3b61e2c4c8c4" />
+
 
 ### 4. Interactive "What-If" Cascading Shock Simulator
 - Health planners can select any health facility, dial in an artificial shock magnitude (e.g., $+35\%$ sudden disease surge or logistics cutoff), and trigger a multi-hop simulation.
