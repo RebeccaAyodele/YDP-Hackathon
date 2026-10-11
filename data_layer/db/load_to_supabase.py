@@ -248,11 +248,17 @@ def load_via_postgres(
     print("\nALL DATASETS SUCCESSFULLY INGESTED INTO SUPABASE POSTGRESQL!")
 
 
-def main():
+def main(facilities_df: pd.DataFrame | None = None, feat_df: pd.DataFrame | None = None, sim_df: pd.DataFrame | None = None, edges_data: list[dict] | None = None):
     print("PHC PULSE: SUPABASE DATA INGESTION")
     db_url = os.getenv("SUPABASE_URL")
-    if db_url and "YOUR_PASSWORD" not in db_url:
-        load_via_postgres(db_url)
+    if db_url:
+        load_via_postgres(
+            db_url,
+            facilities_df=facilities_df,
+            feat_df=feat_df,
+            sim_df=sim_df,
+            edges_data=edges_data,
+        )
     else:
         print("\n[Configuration Required]")
         print("Please configure SUPABASE_URL in your .env file.")
