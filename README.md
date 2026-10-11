@@ -110,7 +110,7 @@ Repulse grounds its simulation in real Nigerian facility registries and national
 
 | Dataset / Source | Origin & Authority | Application in Repulse |
 | :--- | :--- | :--- |
-| **Master Health Facility Registry** | [GRID3 Nigeria GeoPortal](https://nigeria.grid3.org/) | 1,292 public health facilities with GPS coordinates, wards, and National Health Facility Registry (NHFR) codes across 24 LGAs. |
+| **Master Health Facility Registry** | [GRID3 Nigeria GeoPortal](https://github.com/RebeccaAyodele/YDP-Hackathon/blob/main/data_layer/GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv)| 1,292 public health facilities with GPS coordinates, wards, and National Health Facility Registry (NHFR) codes across 24 LGAs. |
 | **Multidimensional Poverty Index (MPI 2022)** | National Bureau of Statistics (NBS), [official report (PDF)](data_layer/data_docs/NIGERIA%20MULTIDIMENSIONAL%20POVERTY%20INDEX%20SURVEY%20RESULTS%202022%20(1).pdf) | Official Alkire-Foster MPI scores ($H \times A$) for the national level (Appendix D1), geopolitical zones (D5), states (D6) and senatorial districts (D7). Among the focal states, MPI ranges from 0.101 in Lagos to 0.409 in Sokoto. |
 | **Demographic and Health Survey (NDHS 2023–24)** | National Population Commission (NPC), [Key Indicators Report (PDF)](https://dhsprogram.com/pubs/pdf/PR157/PR157.pdf) | State-level Full Immunization Coverage (FIC %), Antenatal Care (ANC 4+ visits), and Under-5 Mortality per 1,000 live births. |
 | **Minimum Standards for PHC** | NPHCDA / FMOH | Facility tier normalization: Comprehensive Health Centre (CHC), Primary Health Centre (PHC), Primary Health Clinic, and Health Post. |
