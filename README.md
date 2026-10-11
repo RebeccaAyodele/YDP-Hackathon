@@ -354,13 +354,13 @@ These checks run during pipeline execution on the **simulated** facility data. T
 - Implement a home page and better authentication
 - Improve Better assumption on the data points
 - 
-## 👥 Team & Acknowledgements
+## 👥 Team
 
 ### Project Team (Data Divas)
 * **Ayodele Rebecca** — Software Engineer
 * **Ogechukwu Okoli** — Data Engineer
 
-# Submission for the YDP Datathon 1.0
+#### Submission for the YDP Datathon 1.0
 
 ---
 
