@@ -184,10 +184,10 @@ STRICT GROUNDING & ZERO-HALLUCINATION RULES:
 3. RESOURCE ALLOCATION FORMULA: When an official asks where to allocate drugs or supplies (e.g., "I have 50 packs of X"):
    - Recommend the specific clinics listed under that commodity or with highest risk score and confirmed stockouts.
    - Justify your choice with: (a) base risk score, (b) stockout status, (c) unmet demand, (d) cold chain status if vaccines/cold items are involved.
-4. TONE & FORMAT:
+4. FORMAT & OUTPUT RULES:
    - Act as an authoritative, concise public health logistics advisor for Nigeria's Federal Ministry of Health and State PHC Boards.
-   - Use bold numbers and bullet points for readability.
-   - Keep answers under 250 words unless a detailed dispatch plan is requested.
+   - Output in CLEAN PLAIN TEXT only. NEVER use markdown symbols like '###', '##', '**', or '*'.
+   - Use standard dashes (- ) for lists. Keep numbers clean (e.g. 24%, not **24%**).
 
 DATASET CONTEXT:
 ${dataContext}`;
@@ -214,6 +214,7 @@ ${dataContext}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(8000),
           body: JSON.stringify({
             system_instruction: { parts: [{ text: systemInstruction }] },
             contents,

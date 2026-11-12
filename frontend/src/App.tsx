@@ -21,7 +21,9 @@ import {
   Radio,
   Layers,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Menu,
+  X
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -102,6 +104,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 5;
   const [triageOpen, setTriageOpen] = useState<boolean>(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (currentUser.role === 'STATE') {
@@ -376,7 +379,13 @@ export default function App() {
   return (
     <div className="app-layout">
       {/* LEFT VERTICAL SIDEBAR (NAVIGATION STYLE OPTION A) */}
-      <aside className="app-sidebar">
+      {/* Mobile Navigation Backdrop */}
+      {mobileMenuOpen && (
+        <div className="sidebar-backdrop" onClick={() => setMobileMenuOpen(false)} />
+      )}
+
+      {/* LEFT VERTICAL SIDEBAR */}
+      <aside className={'app-sidebar ' + (mobileMenuOpen ? 'mobile-open' : '')}>
         <div>
           {/* Brand header */}
           <div className="sidebar-brand">
@@ -405,27 +414,28 @@ export default function App() {
                 Vulnerability Triage
               </div>
             </div>
+            <button type="button" onClick={() => setMobileMenuOpen(false)} className="sidebar-close-btn" aria-label="Close menu"><X size={18} /></button>
           </div>
 
           {/* Navigation links */}
           <div className="sidebar-nav">
             <div className="sidebar-section-title">Navigation</div>
             <button
-              onClick={() => navigateToView('overview')}
+              onClick={() => { navigateToView('overview'); setMobileMenuOpen(false); }}
               className={`sidebar-nav-item ${mainViewMode === 'overview' ? 'active' : ''}`}
             >
               <Activity size={18} />
               <span>Overview</span>
             </button>
             <button
-              onClick={() => navigateToView('map')}
+              onClick={() => { navigateToView('map'); setMobileMenuOpen(false); }}
               className={`sidebar-nav-item ${mainViewMode === 'map' ? 'active' : ''}`}
             >
               <MapIcon size={18} />
               <span>Live Map</span>
             </button>
             <button
-              onClick={() => navigateToView('analytics')}
+              onClick={() => { navigateToView('analytics'); setMobileMenuOpen(false); }}
               className={`sidebar-nav-item ${mainViewMode === 'analytics' ? 'active' : ''}`}
             >
               <BarChart3 size={18} />
@@ -433,7 +443,7 @@ export default function App() {
             </button>
             {selectedFacility && (
               <button
-                onClick={() => openFullFacilityPage(selectedFacility)}
+                onClick={() => { openFullFacilityPage(selectedFacility); setMobileMenuOpen(false); }}
                 className={`sidebar-nav-item ${mainViewMode === 'facility' ? 'active' : ''}`}
               >
                 <Building2 size={18} />
@@ -499,12 +509,15 @@ export default function App() {
       <div className="app-workspace">
         {/* Slim Workspace Top Bar */}
         <header className="app-topbar">
-          <div>
-            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
-              Good morning, {currentUser.username.replace('_', ' ')} 👋
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button type="button" onClick={() => setMobileMenuOpen(true)} className="mobile-hamburger-btn" aria-label="Open navigation menu"><Menu size={20} /></button>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                Good morning, {currentUser.username.replace('_', ' ')} 👋
             </div>
-            <div style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
-              Repulse Spatial Epidemiological Intelligence Dashboard
+              <div style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
+                Repulse Spatial Epidemiological Intelligence Dashboard
+              </div>
             </div>
           </div>
 
@@ -642,7 +655,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => navigateToView('analytics')}
+                      onClick={() => { navigateToView('analytics'); setMobileMenuOpen(false); }}
                       style={{
                         height: '42px',
                         padding: '0 16px',
@@ -677,7 +690,7 @@ export default function App() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => navigateToView('analytics')}
+                      onClick={() => { navigateToView('analytics'); setMobileMenuOpen(false); }}
                       className="btn btn-outline"
                       style={{ fontSize: '12.5px', padding: '5px 10px' }}
                     >
@@ -1352,7 +1365,7 @@ export default function App() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
-                  onClick={() => navigateToView('map')}
+                  onClick={() => { navigateToView('map'); setMobileMenuOpen(false); }}
                   className="btn btn-outline"
                   style={{ gap: '6px', fontSize: '14px' }}
                 >
@@ -1361,7 +1374,7 @@ export default function App() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => navigateToView('overview')}
+                  onClick={() => { navigateToView('overview'); setMobileMenuOpen(false); }}
                   className="btn btn-outline"
                   style={{ fontSize: '14px' }}
                 >
