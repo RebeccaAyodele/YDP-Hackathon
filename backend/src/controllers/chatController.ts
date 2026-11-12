@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { getScoredFacilities } from '../services/riskEngine.js';
 import { getCommodities, getFacilityInventoryMap, getLgaIndicators } from '../services/dataLoader.js';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
 
 function buildDataContext(userMessage: string = ''): string {
   const facilities = getScoredFacilities();
@@ -82,8 +82,8 @@ function buildDataContext(userMessage: string = ''): string {
   let dynamicContext = '';
 
   // 1. Check if user mentions a specific commodity/drug
-  const matchedCommodities = commodities.filter(c => 
-    queryLower.includes(c.name.toLowerCase()) || 
+  const matchedCommodities = commodities.filter(c =>
+    queryLower.includes(c.name.toLowerCase()) ||
     (c.commodity_id && queryLower.includes(c.commodity_id.toLowerCase()))
   );
 
@@ -134,12 +134,12 @@ function buildDataContext(userMessage: string = ''): string {
 
 TOTAL NETWORK METRICS:
 - Total Monitored PHCs: ${total}
-- CRITICAL Risk (score 70-100): ${critical.length} facilities (${Math.round((critical.length/total)*100)}%)
-- HIGH Risk (score 45-69): ${high.length} facilities (${Math.round((high.length/total)*100)}%)
-- MEDIUM Risk (score 25-44): ${medium.length} facilities (${Math.round((medium.length/total)*100)}%)
-- LOW Risk (score 0-24): ${low.length} facilities (${Math.round((low.length/total)*100)}%)
-- Reporting Blackouts (silent ≥3 weeks): ${silent.length} facilities (${Math.round((silent.length/total)*100)}%)
-- Solar Cold Chain Ready: ${coldChain.length} facilities (${Math.round((coldChain.length/total)*100)}%)
+- CRITICAL Risk (score 70-100): ${critical.length} facilities (${Math.round((critical.length / total) * 100)}%)
+- HIGH Risk (score 45-69): ${high.length} facilities (${Math.round((high.length / total) * 100)}%)
+- MEDIUM Risk (score 25-44): ${medium.length} facilities (${Math.round((medium.length / total) * 100)}%)
+- LOW Risk (score 0-24): ${low.length} facilities (${Math.round((low.length / total) * 100)}%)
+- Reporting Blackouts (silent ≥3 weeks): ${silent.length} facilities (${Math.round((silent.length / total) * 100)}%)
+- Solar Cold Chain Ready: ${coldChain.length} facilities (${Math.round((coldChain.length / total) * 100)}%)
 
 TOP 15 HIGHEST-RISK FACILITIES IN THE NATION:
 ${top15Critical}
@@ -227,7 +227,7 @@ ${dataContext}`;
       return res.status(502).json({ error: 'Empty response from AI service.' });
     }
 
-    res.json({ reply: text, model: 'gemini-2.0-flash' });
+    res.json({ reply: text, model: 'gemini-3.8-flash' });
   } catch (error: any) {
     console.error('Chat error:', error);
     res.status(500).json({ error: 'Failed to process chat message', message: error.message });
