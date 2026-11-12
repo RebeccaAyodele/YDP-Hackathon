@@ -82,6 +82,10 @@ export default function App() {
 
   const [stats, setStats] = useState<OverviewStats | null>(null);
   const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [facilityTotalCount, setFacilityTotalCount] = useState<number>(0);
+  const [facilityFilterSummary, setFacilityFilterSummary] = useState<{
+    critical_risk: number; high_risk: number; medium_risk: number; low_risk: number; silent_facilities: number;
+  }>({ critical_risk: 0, high_risk: 0, medium_risk: 0, low_risk: 0, silent_facilities: 0 });
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [neighbors, setNeighbors] = useState<NeighborDetail[]>([]);
@@ -170,6 +174,8 @@ export default function App() {
       setDatasetAnalytics(analyticsData);
       const list = facData.facilities || [];
       setFacilities(list);
+      setFacilityTotalCount(facData.total_count ?? list.length);
+      setFacilityFilterSummary(facData.filter_summary ?? { critical_risk: 0, high_risk: 0, medium_risk: 0, low_risk: 0, silent_facilities: 0 });
 
       if (list.length > 0) {
         if (!selectedFacility || !list.some(f => f.facility_id === selectedFacility.facility_id)) {
@@ -294,24 +300,18 @@ export default function App() {
   }, [filteredFacilities, currentPage, itemsPerPage]);
 
   const coldChainReadyCount = useMemo(() => facilities.filter(f => f.has_cold_chain).length, [facilities]);
-  const coldChainPct = useMemo(() => facilities.length > 0 ? Math.round((coldChainReadyCount / facilities.length) * 100) : 0, [facilities, coldChainReadyCount]);
+  const coldChainPct = useMemo(() => facilityTotalCount > 0 ? Math.round((coldChainReadyCount / facilityTotalCount) * 100) : 0, [facilityTotalCount, coldChainReadyCount]);
 
-  // Recharts Dataset 1: Risk Tier Breakdown
+  // Recharts Dataset 1: Risk Tier Breakdown — uses filter_summary (full dataset, not paginated slice)
   const riskTierChartData = useMemo(() => {
-    const crit = facilities.filter(f => f.risk_tier === 'CRITICAL').length;
-    const high = facilities.filter(f => f.risk_tier === 'HIGH').length;
-    const med = facilities.filter(f => f.risk_tier === 'MEDIUM').length;
-    const low = facilities.filter(f => f.risk_tier === 'LOW').length;
-    const silent = facilities.filter(f => f.is_silent).length;
-
     return [
-      { name: 'Critical Priority (70–100)', tierKey: 'CRITICAL', count: crit, color: '#DC2626' },
-      { name: 'High Risk (45–69)', tierKey: 'HIGH', count: high, color: '#EA580C' },
-      { name: 'Medium Risk (25–44)', tierKey: 'MEDIUM', count: med, color: '#D97706' },
-      { name: 'Low Risk (0–24)', tierKey: 'LOW', count: low, color: '#0F766E' },
-      { name: 'Silent Blackout (≥3 wks)', tierKey: 'SILENT', count: silent, color: '#B45309' },
+      { name: 'Critical Priority (70–100)', tierKey: 'CRITICAL', count: facilityFilterSummary.critical_risk, color: '#DC2626' },
+      { name: 'High Risk (45–69)', tierKey: 'HIGH', count: facilityFilterSummary.high_risk, color: '#EA580C' },
+      { name: 'Medium Risk (25–44)', tierKey: 'MEDIUM', count: facilityFilterSummary.medium_risk, color: '#D97706' },
+      { name: 'Low Risk (0–24)', tierKey: 'LOW', count: facilityFilterSummary.low_risk, color: '#0F766E' },
+      { name: 'Silent Blackout (≥3 wks)', tierKey: 'SILENT', count: facilityFilterSummary.silent_facilities, color: '#B45309' },
     ];
-  }, [facilities]);
+  }, [facilityFilterSummary]);
 
   const topUrgentFacilities = useMemo(() => {
     return [...facilities]
@@ -457,7 +457,7 @@ export default function App() {
                 {currentUser.role === 'STATE' ? `${currentUser.state} State` : (selectedState ? `${selectedState} State` : 'National Scope (6 Zones)')}
               </div>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                {facilities.length.toLocaleString()} Monitored PHCs
+                {facilityTotalCount.toLocaleString()} Monitored PHCs
               </div>
             </div>
           </div>
@@ -671,7 +671,7 @@ export default function App() {
                         Facility Vulnerability Posture
                       </h2>
                       <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        Proportional risk distribution across {facilities.length.toLocaleString()} active clinics
+                        Proportional risk distribution across {facilityTotalCount.toLocaleString()} active clinics
                       </p>
                     </div>
                     <button
@@ -710,7 +710,7 @@ export default function App() {
                               return (
                                 <div style={{ background: '#1C2424', color: '#FFFFFF', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
                                   <div style={{ fontWeight: 700 }}>{data.name}</div>
-                                  <div style={{ marginTop: '2px', color: '#D1D5DB' }}>{data.count} facilities ({facilities.length > 0 ? Math.round((data.count / facilities.length) * 100) : 0}%)</div>
+                                  <div style={{ marginTop: '2px', color: '#D1D5DB' }}>{data.count} facilities ({facilityTotalCount > 0 ? Math.round((data.count / facilityTotalCount) * 100) : 0}%)</div>
                                 </div>
                               );
                             }
@@ -730,7 +730,7 @@ export default function App() {
                       pointerEvents: 'none'
                     }}>
                       <div style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
-                        {loading ? '…' : facilities.length.toLocaleString()}
+                        {loading ? '…' : facilityTotalCount.toLocaleString()}
                       </div>
                       <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: '3px' }}>
                         Monitored PHCs
@@ -741,7 +741,7 @@ export default function App() {
                   {/* Status Badges Row */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', paddingTop: '4px' }}>
                     {riskTierChartData.slice(0, 4).map(tier => {
-                      const pct = facilities.length > 0 ? Math.round((tier.count / facilities.length) * 100) : 0;
+                      const pct = facilityTotalCount > 0 ? Math.round((tier.count / facilityTotalCount) * 100) : 0;
                       return (
                         <div
                           key={tier.tierKey}
@@ -904,7 +904,7 @@ export default function App() {
                       <Radio size={16} color="#D97706" />
                     </div>
                     <div style={{ fontSize: '28px', fontWeight: 800, color: '#D97706', lineHeight: 1 }}>
-                      {loading ? '…' : (stats?.silent_facilities_count ?? facilities.filter(f => f.is_silent).length)}
+                      {loading ? '…' : (stats?.silent_facilities_count ?? facilityFilterSummary.silent_facilities)}
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                       &ge;3 missed reports
