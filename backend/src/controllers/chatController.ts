@@ -214,13 +214,14 @@ ${dataContext}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(15000),
           body: JSON.stringify({
             system_instruction: { parts: [{ text: systemInstruction }] },
             contents,
             generationConfig: {
               temperature: 0.1, // Near-zero temperature ensures strict factual consistency with zero hallucination
-              maxOutputTokens: 600,
+              maxOutputTokens: 2048,
+              thinkingConfig: { thinkingBudget: 0 },
               topP: 0.8
             }
           })
