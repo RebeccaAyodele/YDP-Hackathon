@@ -320,7 +320,7 @@ export default function App() {
   const topStockoutCommodities = useMemo(() => {
     return [...(datasetAnalytics?.commodity_stockouts || [])]
       .sort((a, b) => b.stockout_rate_pct - a.stockout_rate_pct)
-      .slice(0, 5);
+      .slice(0, 6);
   }, [datasetAnalytics]);
 
   // Recharts Dataset 2: LGA Average Risk Comparison (Actual Dataset Aggregation)
@@ -755,98 +755,70 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Right: Risk Breakdown + Top Essential Commodity Shortages */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div className="panel" style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                    <div>
-                      <h2 style={{ fontSize: '18.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        Network Risk Tier Breakdown
-                      </h2>
-                      <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        Click any tier to filter the full-screen map immediately
-                      </p>
-                    </div>
+              {/* Right: Highest Essential Commodity Stockout Rates (No progress bars) */}
+              <div className="panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <h2 style={{ fontSize: '18.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      Highest Commodity Stockout Rates
+                    </h2>
+                    <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      Share of monitored healthcare facilities currently facing zero stock
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAnalyticsSubTab('commodities');
+                      navigateToView('analytics');
+                    }}
+                    className="btn btn-outline"
+                    style={{ fontSize: '13.5px' }}
+                  >
+                    All Charts <ArrowUpRight size={14} />
+                  </button>
+                </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {riskTierChartData.map(item => {
-                      const total = Math.max(1, facilities.length);
-                      const pct = Math.round((item.count / total) * 100);
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {topStockoutCommodities.length > 0 ? (
+                    topStockoutCommodities.map(comm => {
+                      const badgeClass = comm.stockout_rate_pct >= 50 ? 'badge-clean badge-red' : comm.stockout_rate_pct >= 25 ? 'badge-clean badge-amber' : 'badge-clean badge-green';
+
                       return (
                         <div
-                          key={item.name}
-                          onClick={() => {
-                            if (item.tierKey === 'SILENT') {
-                              setOnlySilent(true);
-                              setSelectedTier('');
-                            } else {
-                              setOnlySilent(false);
-                              setSelectedTier(item.tierKey);
-                            }
-                            setTriageOpen(true);
-                            navigateToView('map');
+                          key={comm.commodity_id}
+                          className="panel-row"
+                          style={{
+                            padding: '14px 16px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: '12px'
                           }}
-                          style={{ cursor: 'pointer', padding: '6px 8px', borderRadius: '8px', background: 'var(--bg-subtle)', border: '1px solid var(--border-light)' }}
                         >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 600, marginBottom: '6px' }}>
-                            <span style={{ color: 'var(--text-primary)' }}>{item.name}</span>
-                            <span style={{ color: item.color, fontWeight: 700 }}>{item.count} clinics ({pct}%)</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: '1.25' }}>
+                              {comm.name}
+                            </div>
+                            <div style={{ fontSize: '13.5px', color: 'var(--text-muted)', marginTop: '3px' }}>
+                              {comm.category} • Avg {comm.avg_days_stocked_out}d out • {comm.total_unmet_demand?.toLocaleString()} unfulfilled doses
+                            </div>
                           </div>
-                          <div style={{ width: '100%', height: '8px', background: '#E7E6E1', borderRadius: '999px', overflow: 'hidden' }}>
-                            <div style={{ width: `${Math.min(100, pct)}%`, height: '100%', background: item.color, borderRadius: '999px' }} />
+
+                          <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
+                            <span className={badgeClass} style={{ fontSize: '14px', padding: '3px 9px' }}>
+                              {comm.stockout_rate_pct}% Stockout
+                            </span>
+                            <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
+                              {comm.stockout_facilities} of {comm.total_facilities} clinics
+                            </span>
                           </div>
                         </div>
                       );
-                    })}
-                  </div>
-                </div>
-
-                <div className="panel" style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                    <div>
-                      <h2 style={{ fontSize: '18.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        Highest Commodity Stockout Rates
-                      </h2>
-                      <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        Percentage of monitored facilities currently out of stock
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAnalyticsSubTab('commodities');
-                        navigateToView('analytics');
-                      }}
-                      className="btn btn-outline"
-                      style={{ fontSize: '13.5px' }}
-                    >
-                      All Charts <ArrowUpRight size={14} />
-                    </button>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '11px' }}>
-                    {topStockoutCommodities.length > 0 ? (
-                      topStockoutCommodities.map(comm => {
-                        const barColor = comm.stockout_rate_pct >= 50 ? '#DC2626' : comm.stockout_rate_pct >= 25 ? '#EA580C' : '#0F766E';
-                        return (
-                          <div key={comm.commodity_id}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '5px' }}>
-                              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{comm.name}</span>
-                              <span style={{ fontWeight: 700, color: barColor }}>
-                                {comm.stockout_rate_pct}% ({comm.stockout_facilities}/{comm.total_facilities})
-                              </span>
-                            </div>
-                            <div style={{ width: '100%', height: '8px', background: '#E7E6E1', borderRadius: '999px', overflow: 'hidden' }}>
-                              <div style={{ width: `${Math.min(100, comm.stockout_rate_pct)}%`, height: '100%', background: barColor, borderRadius: '999px' }} />
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Loading commodity stockout metrics…</div>
-                    )}
-                  </div>
+                    })
+                  ) : (
+                    <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Loading commodity stockout metrics…</div>
+                  )}
                 </div>
               </div>
             </div>
