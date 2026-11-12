@@ -33,7 +33,9 @@ import {
   Legend,
   CartesianGrid, 
   ReferenceLine, 
-  Cell 
+  Cell,
+  PieChart,
+  Pie
 } from 'recharts';
 import { 
   fetchOverviewStats, 
@@ -371,399 +373,440 @@ export default function App() {
   }, [facilities]);
 
   return (
-    <div className="app-container">
-      {/* Header */}
-      <header className="app-header" style={{
-        background: '#FFFFFF',
-        borderBottom: '1px solid var(--border-light)',
-        padding: '14px 28px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        boxShadow: 'var(--shadow-sm)'
-      }}>
-        <div className="header-brand" style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, var(--teal-primary) 0%, var(--teal-hover) 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <Activity size={21} color="#FFFFFF" />
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-                Repulse
-              </span>
-              <span className="badge-clean badge-blue">
-                Risk Engine
-              </span>
+    <div className="app-layout">
+      {/* LEFT VERTICAL SIDEBAR (NAVIGATION STYLE OPTION A) */}
+      <aside className="app-sidebar">
+        <div>
+          {/* Brand header */}
+          <div className="sidebar-brand">
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, var(--teal-primary) 0%, var(--teal-hover) 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <Activity size={21} color="#FFFFFF" />
             </div>
-            <div style={{ fontSize: '13.5px', color: 'var(--text-muted)' }}>
-              Nigeria Primary Healthcare Vulnerability Triage & Spatial Spillover
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '19px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                  Repulse
+                </span>
+                <span className="badge-clean badge-blue" style={{ fontSize: '10.5px', padding: '1px 6px' }}>
+                  Engine
+                </span>
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                Vulnerability Triage
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* View Switcher & User Account */}
-        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* Main View Toggle Buttons */}
-          <div className="header-view-switcher" style={{ display: 'flex', background: 'var(--bg-app)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
+          {/* Navigation links */}
+          <div className="sidebar-nav">
+            <div className="sidebar-section-title">Navigation</div>
             <button
               onClick={() => navigateToView('overview')}
-              className={`btn ${mainViewMode === 'overview' ? 'btn-primary' : 'btn-outline'}`}
-              style={{ padding: '7px 15px', fontSize: '13.5px', border: 'none', background: mainViewMode === 'overview' ? 'var(--teal-primary)' : 'transparent', color: mainViewMode === 'overview' ? '#FFFFFF' : 'var(--text-body)' }}
+              className={`sidebar-nav-item ${mainViewMode === 'overview' ? 'active' : ''}`}
             >
-              <Activity size={15} />
-              Overview
+              <Activity size={18} />
+              <span>Overview</span>
             </button>
             <button
               onClick={() => navigateToView('map')}
-              className={`btn ${mainViewMode === 'map' ? 'btn-primary' : 'btn-outline'}`}
-              style={{ padding: '7px 15px', fontSize: '13.5px', border: 'none', background: mainViewMode === 'map' ? 'var(--teal-primary)' : 'transparent', color: mainViewMode === 'map' ? '#FFFFFF' : 'var(--text-body)' }}
+              className={`sidebar-nav-item ${mainViewMode === 'map' ? 'active' : ''}`}
             >
-              <MapIcon size={15} />
-              Live Map
+              <MapIcon size={18} />
+              <span>Live Map</span>
             </button>
             <button
               onClick={() => navigateToView('analytics')}
-              className={`btn ${mainViewMode === 'analytics' ? 'btn-primary' : 'btn-outline'}`}
-              style={{ padding: '7px 15px', fontSize: '13.5px', border: 'none', background: mainViewMode === 'analytics' ? 'var(--teal-primary)' : 'transparent', color: mainViewMode === 'analytics' ? '#FFFFFF' : 'var(--text-body)' }}
+              className={`sidebar-nav-item ${mainViewMode === 'analytics' ? 'active' : ''}`}
             >
-              <BarChart3 size={15} />
-              Visual Analytics
+              <BarChart3 size={18} />
+              <span>Visual Analytics</span>
             </button>
-            {selectedFacility && mainViewMode === 'facility' && (
+            {selectedFacility && (
               <button
                 onClick={() => openFullFacilityPage(selectedFacility)}
-                className="btn btn-primary"
-                style={{ padding: '7px 15px', fontSize: '13.5px', border: 'none', background: 'var(--teal-primary)', color: '#FFFFFF' }}
+                className={`sidebar-nav-item ${mainViewMode === 'facility' ? 'active' : ''}`}
               >
-                <Building2 size={15} />
-                Facility Page
+                <Building2 size={18} />
+                <span>Facility Page</span>
               </button>
             )}
+
+            <div className="sidebar-section-title" style={{ marginTop: '16px' }}>Operational Scope</div>
+            <div style={{
+              padding: '12px 14px',
+              background: '#FFFFFF',
+              border: '1px solid var(--border-light)',
+              borderRadius: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px'
+            }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Active Jurisdiction
+              </div>
+              <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {currentUser.role === 'STATE' ? `${currentUser.state} State` : (selectedState ? `${selectedState} State` : 'National Scope (6 Zones)')}
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                {facilities.length.toLocaleString()} Monitored PHCs
+              </div>
+            </div>
           </div>
-
-          <button
-            onClick={() => setShowAuthModal(true)}
-            className="btn btn-outline"
-            style={{ padding: '7px 13px', fontSize: '13px' }}
-          >
-            <Shield size={15} color="var(--blue-primary)" />
-            <span>
-              {currentUser.role === 'STATE' ? `${currentUser.state} State Officer` : 'National Admin'}
-            </span>
-            <span style={{ color: 'var(--text-subtle)', marginLeft: '4px' }}>({currentUser.username})</span>
-          </button>
-
-          <button 
-            onClick={loadData}
-            className="btn btn-outline"
-            style={{ padding: '7px 13px', fontSize: '13px' }}
-            title="Refresh database records"
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Sync
-          </button>
         </div>
-      </header>
+
+        {/* User profile card at bottom */}
+        <div
+          className="sidebar-profile"
+          onClick={() => setShowAuthModal(true)}
+          title="Switch operational role or agency login"
+        >
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: 'var(--blue-subtle)',
+            border: '1px solid var(--blue-border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <Shield size={17} color="var(--blue-primary)" />
+          </div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {currentUser.username}
+            </div>
+            <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
+              {currentUser.role === 'STATE' ? `${currentUser.state} PHCB` : 'FMOH National'}
+            </div>
+          </div>
+        </div>
+      </aside>
 
       {/* Main Workspace */}
-      <main
-        className="main-content"
-        style={{
-          padding: mainViewMode === 'map' ? '0' : '24px 32px',
-          maxWidth: mainViewMode === 'map' ? '100%' : '1680px',
-          margin: '0 auto',
-          width: '100%',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: mainViewMode === 'map' ? '0px' : '20px'
-        }}
-      >
+      <div className="app-workspace">
+        {/* Slim Workspace Top Bar */}
+        <header className="app-topbar">
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+              Good morning, {currentUser.username.replace('_', ' ')} 👋
+            </div>
+            <div style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
+              Repulse Spatial Epidemiological Intelligence Dashboard
+            </div>
+          </div>
 
-        {/* PAGE 1: EXECUTIVE OVERVIEW FRONT PAGE (OPTION A) */}
-        {mainViewMode === 'overview' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Situation Briefing Banner (Primary Viridian Card with White CTA) */}
-            <section
-              style={{
-                padding: '28px 32px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '20px',
-                background: 'linear-gradient(135deg, #0F766E 0%, #0D5C56 100%)',
-                borderRadius: '16px',
-                border: '1px solid #115E59',
-                boxShadow: '0 12px 32px rgba(15, 118, 110, 0.22)',
-                color: '#FFFFFF'
-              }}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {currentUser.role === 'NATIONAL' && (
+              <select
+                value={selectedState}
+                onChange={e => { setSelectedState(e.target.value); setCurrentPage(1); }}
+                className="input-clean"
+                style={{ padding: '6px 12px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                aria-label="Scope by state"
+              >
+                <option value="">All States (6 Zones)</option>
+                <option value="Sokoto">Sokoto State</option>
+                <option value="Yobe">Yobe State</option>
+                <option value="Ebonyi">Ebonyi State</option>
+                <option value="Plateau">Plateau State</option>
+                <option value="Bayelsa">Bayelsa State</option>
+                <option value="Lagos">Lagos State</option>
+              </select>
+            )}
+
+            <button
+              onClick={handleCopyLink}
+              className="btn btn-outline"
+              style={{ padding: '7px 12px', fontSize: '13px' }}
+              title="Copy deep link to current view"
             >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                  <span
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.18)',
-                      border: '1px solid rgba(255, 255, 255, 0.32)',
-                      color: '#FFFFFF',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      padding: '3px 10px',
-                      borderRadius: '6px',
-                      letterSpacing: '0.04em',
-                      textTransform: 'uppercase'
-                    }}
-                  >
-                    Live Network Briefing
-                  </span>
-                  <span style={{ fontSize: '14px', color: '#CCFBF1', fontWeight: 600 }}>
-                    {currentUser.displayName}
-                  </span>
-                </div>
-                <h1 style={{ fontSize: '27px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: '1.2' }}>
-                  Primary Healthcare Vulnerability Overview
-                </h1>
-                <p style={{ fontSize: '15px', color: '#E6FFFA', marginTop: '8px', maxWidth: '740px', lineHeight: '1.55' }}>
-                  First-hand operational summary of facility risk posture, reporting blackouts, cold chain readiness, and essential commodity shortages. Select any metric or launch the full-screen map to inspect individual clinics.
-                </p>
-              </div>
+              <Share2 size={14} color="var(--text-muted)" />
+              {copiedLink ? 'Copied!' : 'Share'}
+            </button>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                {currentUser.role === 'NATIONAL' && (
-                  <select
-                    value={selectedState}
-                    onChange={e => { setSelectedState(e.target.value); setCurrentPage(1); }}
-                    style={{
-                      height: '46px',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      background: 'rgba(255, 255, 255, 0.14)',
-                      color: '#FFFFFF',
-                      border: '1px solid rgba(255, 255, 255, 0.35)',
-                      borderRadius: '8px',
-                      padding: '0 14px',
-                      outline: 'none'
-                    }}
-                    aria-label="Scope by state"
-                  >
-                    <option value="" style={{ color: '#1C2424', background: '#FFFFFF' }}>All States (6 Zones)</option>
-                    <option value="Sokoto" style={{ color: '#1C2424', background: '#FFFFFF' }}>Sokoto State</option>
-                    <option value="Yobe" style={{ color: '#1C2424', background: '#FFFFFF' }}>Yobe State</option>
-                    <option value="Ebonyi" style={{ color: '#1C2424', background: '#FFFFFF' }}>Ebonyi State</option>
-                    <option value="Plateau" style={{ color: '#1C2424', background: '#FFFFFF' }}>Plateau State</option>
-                    <option value="Bayelsa" style={{ color: '#1C2424', background: '#FFFFFF' }}>Bayelsa State</option>
-                    <option value="Lagos" style={{ color: '#1C2424', background: '#FFFFFF' }}>Lagos State</option>
-                  </select>
-                )}
+            <button 
+              onClick={loadData}
+              className="btn btn-outline"
+              style={{ padding: '7px 13px', fontSize: '13px' }}
+              title="Refresh database records"
+            >
+              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+              Sync
+            </button>
+          </div>
+        </header>
 
-                <button
-                  type="button"
-                  onClick={() => navigateToView('analytics')}
+        {/* Main Content Workspace */}
+        <main
+          className="main-content"
+          style={{
+            padding: mainViewMode === 'map' ? '0' : '24px 32px',
+            maxWidth: mainViewMode === 'map' ? '100%' : '1680px',
+            margin: '0 auto',
+            width: '100%',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: mainViewMode === 'map' ? '0px' : '20px'
+          }}
+        >
+
+          {/* PAGE 1: EXECUTIVE OVERVIEW BENTO GRID */}
+          {mainViewMode === 'overview' && (
+            <div className="bento-grid">
+              {/* COLUMN 1 (~1.15fr, 3 asymmetric rows) */}
+              <div className="bento-col">
+                {/* Row 1A: Viridian Green Hero Briefing Card */}
+                <section
                   style={{
-                    height: '46px',
-                    padding: '0 20px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    background: 'rgba(255, 255, 255, 0.14)',
+                    padding: '26px 28px',
+                    background: 'linear-gradient(135deg, #0F766E 0%, #0D5C56 100%)',
+                    borderRadius: '16px',
+                    border: '1px solid #115E59',
+                    boxShadow: '0 12px 32px rgba(15, 118, 110, 0.22)',
                     color: '#FFFFFF',
-                    border: '1px solid rgba(255, 255, 255, 0.35)',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'all 0.14s ease'
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '16px'
                   }}
                 >
-                  <BarChart3 size={17} color="#FFFFFF" />
-                  Visual Analytics
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTriageOpen(true);
-                    navigateToView('map');
-                  }}
-                  style={{
-                    height: '46px',
-                    padding: '0 24px',
-                    fontSize: '15px',
-                    fontWeight: 700,
-                    background: '#FFFFFF',
-                    color: '#0F766E',
-                    border: '1px solid #FFFFFF',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '9px',
-                    boxShadow: '0 6px 18px rgba(0, 0, 0, 0.14)',
-                    transition: 'all 0.14s ease'
-                  }}
-                >
-                  <MapIcon size={18} color="#0F766E" />
-                  Launch Full-Screen Map &rarr;
-                </button>
-              </div>
-            </section>
-
-            {/* Clickable 4 Headline KPI Cards */}
-            <section className="kpi-grid" aria-busy={loading} style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '16px'
-            }}>
-              {/* Card 1: Monitored Facilities */}
-              <div
-                className="panel kpi-card"
-                onClick={() => {
-                  setSelectedTier('');
-                  setOnlySilent(false);
-                  setTriageOpen(true);
-                  navigateToView('map');
-                }}
-                style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
-                title="Open all monitored clinics on the live map"
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <Building2 size={18} color="var(--text-muted)" />
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Monitored Facilities
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <span
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.18)',
+                        border: '1px solid rgba(255, 255, 255, 0.32)',
+                        color: '#FFFFFF',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        padding: '3px 9px',
+                        borderRadius: '6px',
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase'
+                      }}
+                    >
+                      Live Network Briefing
+                    </span>
+                    <span style={{ fontSize: '13px', color: '#CCFBF1', fontWeight: 600 }}>
+                      {currentUser.displayName}
+                    </span>
                   </div>
-                </div>
 
-                <div style={{ fontSize: '34px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: '1.1' }}>
-                  {loading ? <span className="loading-value" role="status">Loading…</span> : (stats?.total_facilities ?? facilities.length)}
-                </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.35' }}>
-                  {currentUser.role === 'STATE' ? `${currentUser.state} State Scope` : (selectedState ? `${selectedState} State Scope` : '24 Priority LGAs across Nigeria')}
-                </div>
-              </div>
-
-              {/* Card 2: Critical & High Triage */}
-              <div
-                className="panel kpi-card"
-                onClick={() => {
-                  setSelectedTier('CRITICAL');
-                  setOnlySilent(false);
-                  setTriageOpen(true);
-                  navigateToView('map');
-                }}
-                style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
-                title="Inspect critical priority clinics on the live map"
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <AlertTriangle size={18} color="#DC2626" />
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Critical & High Triage
-                  </div>
-                </div>
-
-                <div style={{ fontSize: '34px', fontWeight: 700, color: '#DC2626', lineHeight: '1.1' }}>
-                  {loading ? <span className="loading-value" role="status">Loading…</span> : (stats ? stats.critical_risk_count + stats.high_risk_count : '—')}
-                </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.35' }}>
-                  {loading ? 'Loading risk counts…' : `${stats?.critical_risk_count ?? 0} Critical Priority • ${stats?.high_risk_count ?? 0} High Risk`}
-                </div>
-              </div>
-
-              {/* Card 3: Reporting Blackouts */}
-              <div
-                className="panel kpi-card"
-                onClick={() => {
-                  setOnlySilent(true);
-                  setSelectedTier('');
-                  setTriageOpen(true);
-                  navigateToView('map');
-                }}
-                style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
-                title="Filter live map to silent blackout clinics"
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <Radio size={18} color="#D97706" />
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Reporting Blackouts
-                  </div>
-                </div>
-
-                <div style={{ fontSize: '34px', fontWeight: 700, color: '#D97706', lineHeight: '1.1' }}>
-                  {loading ? <span className="loading-value" role="status">Loading…</span> : (stats?.silent_facilities_count ?? facilities.filter(f => f.is_silent).length)}
-                </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.35' }}>
-                  Clinics with ≥3 consecutive missed reports
-                </div>
-              </div>
-
-              {/* Card 4: Cold Chain Readiness */}
-              <div
-                className="panel kpi-card"
-                onClick={() => {
-                  setAnalyticsSubTab('facilities');
-                  navigateToView('analytics');
-                }}
-                style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
-                title="View infrastructure and cold chain breakdown"
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <Thermometer size={18} color="var(--teal-primary)" />
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Cold Chain Readiness
-                  </div>
-                </div>
-
-                <div style={{ fontSize: '34px', fontWeight: 700, color: 'var(--teal-primary)', lineHeight: '1.1' }}>
-                  {loading ? <span className="loading-value" role="status">Loading…</span> : <>{coldChainPct}%<span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-muted)', marginLeft: '8px' }}>({coldChainReadyCount} clinics)</span></>}
-                </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.35' }}>
-                  Solar direct-drive vaccine preservation
-                </div>
-              </div>
-            </section>
-
-            {/* First-Hand Analysis Two-Column Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px' }}>
-              {/* Left: Top Urgent Facilities Requiring Action */}
-              <div className="panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
-                    <h2 style={{ fontSize: '18.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      Highest-Risk Priority Clinics
-                    </h2>
-                    <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      Click any facility to jump directly to its full inspection dossier
+                    <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: '1.25' }}>
+                      Primary Healthcare Vulnerability Overview
+                    </h1>
+                    <p style={{ fontSize: '14px', color: '#E6FFFA', marginTop: '6px', lineHeight: '1.5' }}>
+                      Operational summary of facility risk posture, reporting blackouts, cold chain readiness, and essential commodity shortages across monitored wards.
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTriageOpen(true);
-                      navigateToView('map');
-                    }}
-                    className="btn btn-outline"
-                    style={{ fontSize: '13.5px' }}
-                  >
-                    Full Queue on Map <ArrowUpRight size={14} />
-                  </button>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTriageOpen(true);
+                        navigateToView('map');
+                      }}
+                      style={{
+                        height: '42px',
+                        padding: '0 20px',
+                        fontSize: '14.5px',
+                        fontWeight: 700,
+                        background: '#FFFFFF',
+                        color: '#0F766E',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 6px 18px rgba(0, 0, 0, 0.14)',
+                        transition: 'all 0.14s ease'
+                      }}
+                    >
+                      <MapIcon size={16} color="#0F766E" />
+                      Launch Full-Screen Map &rarr;
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigateToView('analytics')}
+                      style={{
+                        height: '42px',
+                        padding: '0 16px',
+                        fontSize: '13.5px',
+                        fontWeight: 600,
+                        background: 'rgba(255, 255, 255, 0.14)',
+                        color: '#FFFFFF',
+                        border: '1px solid rgba(255, 255, 255, 0.35)',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '7px'
+                      }}
+                    >
+                      <BarChart3 size={15} color="#FFFFFF" />
+                      Visual Analytics
+                    </button>
+                  </div>
+                </section>
+
+                {/* Row 1B: Network Risk Posture Donut Ring Chart */}
+                <div className="panel" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        Facility Vulnerability Posture
+                      </h2>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        Proportional risk distribution across {facilities.length.toLocaleString()} active clinics
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigateToView('analytics')}
+                      className="btn btn-outline"
+                      style={{ fontSize: '12.5px', padding: '5px 10px' }}
+                    >
+                      Analytics <ArrowUpRight size={13} />
+                    </button>
+                  </div>
+
+                  {/* Donut Chart with Centered Number */}
+                  <div style={{ position: 'relative', width: '100%', height: '210px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={riskTierChartData.slice(0, 4)}
+                          dataKey="count"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={68}
+                          outerRadius={94}
+                          paddingAngle={4}
+                          cornerRadius={5}
+                        >
+                          {riskTierChartData.slice(0, 4).map((entry, index) => (
+                            <Cell key={`donut-cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
+                              return (
+                                <div style={{ background: '#1C2424', color: '#FFFFFF', padding: '8px 12px', borderRadius: '8px', fontSize: '12px' }}>
+                                  <div style={{ fontWeight: 700 }}>{data.name}</div>
+                                  <div style={{ marginTop: '2px', color: '#D1D5DB' }}>{data.count} facilities ({facilities.length > 0 ? Math.round((data.count / facilities.length) * 100) : 0}%)</div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+
+                    {/* Centered Total */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      textAlign: 'center',
+                      pointerEvents: 'none'
+                    }}>
+                      <div style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+                        {loading ? '…' : facilities.length.toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: '3px' }}>
+                        Monitored PHCs
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status Badges Row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', paddingTop: '4px' }}>
+                    {riskTierChartData.slice(0, 4).map(tier => {
+                      const pct = facilities.length > 0 ? Math.round((tier.count / facilities.length) * 100) : 0;
+                      return (
+                        <div
+                          key={tier.tierKey}
+                          onClick={() => {
+                            setSelectedTier(tier.tierKey);
+                            setOnlySilent(false);
+                            setTriageOpen(true);
+                            navigateToView('map');
+                          }}
+                          style={{
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-light)',
+                            background: 'var(--bg-subtle)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '2px',
+                            transition: 'all 0.12s ease'
+                          }}
+                          title={`Filter map to ${tier.name}`}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tier.color, flexShrink: 0 }} />
+                            <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {tier.tierKey}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '14px', fontWeight: 700, color: tier.color }}>
+                            {tier.count} <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>({pct}%)</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {loading ? (
-                    <div className="loading-message" role="status">Loading top urgent clinics…</div>
-                  ) : topUrgentFacilities.length > 0 ? (
-                    topUrgentFacilities.map(fac => {
+                {/* Row 1C: Highest-Risk Priority Clinics List */}
+                <div className="panel" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        Highest-Risk Priority Clinics
+                      </h2>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        Click any clinic to open full diagnostic dossier
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTriageOpen(true);
+                        navigateToView('map');
+                      }}
+                      className="btn btn-outline"
+                      style={{ fontSize: '12.5px', padding: '5px 10px' }}
+                    >
+                      Full Queue <ArrowUpRight size={13} />
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {loading ? (
+                      <div className="loading-message" role="status">Loading top clinics…</div>
+                    ) : topUrgentFacilities.slice(0, 4).map(fac => {
                       const dotColor = fac.risk_tier === 'CRITICAL' ? '#DC2626' 
                                     : fac.risk_tier === 'HIGH' ? '#EA580C' 
                                     : fac.risk_tier === 'MEDIUM' ? '#D97706' : '#0F766E';
@@ -773,118 +816,249 @@ export default function App() {
                           onClick={() => openFullFacilityPage(fac)}
                           className="panel-row"
                           style={{
-                            padding: '14px 16px',
+                            padding: '12px 14px',
                             cursor: 'pointer',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            gap: '12px'
+                            gap: '10px'
                           }}
                         >
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
-                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 700, color: 'var(--blue-primary)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', fontWeight: 700, color: 'var(--blue-primary)' }}>
                                 {fac.nhfr_facility_code || fac.facility_id}
                               </span>
                               {fac.is_silent && (
-                                <span className="badge-clean badge-amber" style={{ padding: '2px 7px', fontSize: '11.5px' }}>
-                                  Silent ({fac.weeks_since_last_report || 3} wks)
+                                <span className="badge-clean badge-amber" style={{ padding: '1px 6px', fontSize: '10.5px' }}>
+                                  Silent ({fac.weeks_since_last_report || 3}w)
                                 </span>
                               )}
                             </div>
-                            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: '1.25' }}>
+                            <div style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {fac.facility_name}
                             </div>
-                            <div style={{ fontSize: '13.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                              {fac.lga_name} LGA, {fac.state} • {fac.top_reason_summary?.split('•')[0] || 'High vulnerability score'}
+                            <div style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
+                              {fac.lga_name} LGA, {fac.state}
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                            <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: dotColor }} />
-                            <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: dotColor }} />
+                            <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
                               {fac.base_risk_score}
                             </span>
-                            <ArrowUpRight size={16} color="var(--blue-primary)" />
+                            <ArrowUpRight size={15} color="var(--blue-primary)" />
                           </div>
                         </div>
                       );
-                    })
-                  ) : (
-                    <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>No facilities available in current scope.</div>
-                  )}
+                    })}
+                  </div>
                 </div>
               </div>
 
-              {/* Right: Highest Essential Commodity Stockout Rates (No progress bars) */}
-              <div className="panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  <div>
-                    <h2 style={{ fontSize: '18.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      Highest Commodity Stockout Rates
-                    </h2>
-                    <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      Share of monitored healthcare facilities currently facing zero stock
-                    </p>
-                  </div>
-                  <button
-                    type="button"
+              {/* COLUMN 2 (~1.25fr, 3 cards: Micro-Capsules row, Commodity Stockouts, Priority LGAs) */}
+              <div className="bento-col">
+                {/* Row 2A: 3 Micro-Stat Capsule Cards in a row */}
+                <div className="capsule-grid">
+                  {/* Capsule 1: Critical Priority */}
+                  <div
+                    className="capsule-card"
                     onClick={() => {
-                      setAnalyticsSubTab('commodities');
+                      setSelectedTier('CRITICAL');
+                      setOnlySilent(false);
+                      setTriageOpen(true);
+                      navigateToView('map');
+                    }}
+                    title="Filter live map to critical priority clinics"
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Critical Triage
+                      </span>
+                      <AlertTriangle size={16} color="#DC2626" />
+                    </div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: '#DC2626', lineHeight: 1 }}>
+                      {loading ? '…' : (stats?.critical_risk_count ?? '—')}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      Score &ge; 70 immediate triage
+                    </div>
+                  </div>
+
+                  {/* Capsule 2: Silent Blackout */}
+                  <div
+                    className="capsule-card"
+                    onClick={() => {
+                      setOnlySilent(true);
+                      setSelectedTier('');
+                      setTriageOpen(true);
+                      navigateToView('map');
+                    }}
+                    title="Filter live map to silent blackout clinics"
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Blackouts
+                      </span>
+                      <Radio size={16} color="#D97706" />
+                    </div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: '#D97706', lineHeight: 1 }}>
+                      {loading ? '…' : (stats?.silent_facilities_count ?? facilities.filter(f => f.is_silent).length)}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      &ge;3 missed reports
+                    </div>
+                  </div>
+
+                  {/* Capsule 3: Cold Chain Readiness */}
+                  <div
+                    className="capsule-card"
+                    onClick={() => {
+                      setAnalyticsSubTab('facilities');
                       navigateToView('analytics');
                     }}
-                    className="btn btn-outline"
-                    style={{ fontSize: '13.5px' }}
+                    title="View cold chain readiness breakdown"
                   >
-                    All Charts <ArrowUpRight size={14} />
-                  </button>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Cold Chain
+                      </span>
+                      <Thermometer size={16} color="#0F766E" />
+                    </div>
+                    <div style={{ fontSize: '28px', fontWeight: 800, color: '#0F766E', lineHeight: 1 }}>
+                      {loading ? '…' : `${coldChainPct}%`}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      {coldChainReadyCount} solar direct-drive clinics
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {topStockoutCommodities.length > 0 ? (
-                    topStockoutCommodities.map(comm => {
-                      const badgeClass = comm.stockout_rate_pct >= 50 ? 'badge-clean badge-red' : comm.stockout_rate_pct >= 25 ? 'badge-clean badge-amber' : 'badge-clean badge-green';
+                {/* Row 2B: Highest Essential Commodity Stockout Rates */}
+                <div className="panel" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        Highest Commodity Stockout Rates
+                      </h2>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        Share of monitored healthcare facilities currently facing zero stock
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAnalyticsSubTab('commodities');
+                        navigateToView('analytics');
+                      }}
+                      className="btn btn-outline"
+                      style={{ fontSize: '12.5px', padding: '5px 10px' }}
+                    >
+                      All Items <ArrowUpRight size={13} />
+                    </button>
+                  </div>
 
-                      return (
-                        <div
-                          key={comm.commodity_id}
-                          className="panel-row"
-                          style={{
-                            padding: '14px 16px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            gap: '12px'
-                          }}
-                        >
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: '1.25' }}>
-                              {comm.name}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {topStockoutCommodities.length > 0 ? (
+                      topStockoutCommodities.map(comm => {
+                        const badgeClass = comm.stockout_rate_pct >= 50 ? 'badge-clean badge-red' : comm.stockout_rate_pct >= 25 ? 'badge-clean badge-amber' : 'badge-clean badge-green';
+                        return (
+                          <div
+                            key={comm.commodity_id}
+                            className="panel-row"
+                            style={{
+                              padding: '12px 14px',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              gap: '12px'
+                            }}
+                          >
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: '1.25' }}>
+                                {comm.name}
+                              </div>
+                              <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                {comm.category} • Avg {comm.avg_days_stocked_out}d out • {comm.total_unmet_demand?.toLocaleString()} unfulfilled doses
+                              </div>
                             </div>
-                            <div style={{ fontSize: '13.5px', color: 'var(--text-muted)', marginTop: '3px' }}>
-                              {comm.category} • Avg {comm.avg_days_stocked_out}d out • {comm.total_unmet_demand?.toLocaleString()} unfulfilled doses
+
+                            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px', flexShrink: 0 }}>
+                              <span className={badgeClass} style={{ fontSize: '13px', padding: '2px 8px' }}>
+                                {comm.stockout_rate_pct}% Stockout
+                              </span>
+                              <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
+                                {comm.stockout_facilities} of {comm.total_facilities} clinics
+                              </span>
                             </div>
                           </div>
+                        );
+                      })
+                    ) : (
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Loading commodity stockouts…</div>
+                    )}
+                  </div>
+                </div>
 
-                          <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
-                            <span className={badgeClass} style={{ fontSize: '14px', padding: '3px 9px' }}>
-                              {comm.stockout_rate_pct}% Stockout
-                            </span>
-                            <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
-                              {comm.stockout_facilities} of {comm.total_facilities} clinics
-                            </span>
+                {/* Row 2C: Priority LGA Vulnerability Ranking */}
+                <div className="panel" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        High-Vulnerability Local Government Areas (LGAs)
+                      </h2>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        Highest average facility vulnerability risk scores
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAnalyticsSubTab('lgas');
+                        navigateToView('analytics');
+                      }}
+                      className="btn btn-outline"
+                      style={{ fontSize: '12.5px', padding: '5px 10px' }}
+                    >
+                      Compare LGAs <ArrowUpRight size={13} />
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {lgaChartData.slice(0, 5).map(item => (
+                      <div
+                        key={item.lga}
+                        className="panel-row"
+                        style={{
+                          padding: '11px 14px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '10px'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {item.lga} LGA
+                          </div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '1px' }}>
+                            {item.clinicCount} Monitored PHCs • {item.stockoutRate}% Stockout Burden
                           </div>
                         </div>
-                      );
-                    })
-                  ) : (
-                    <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Loading commodity stockout metrics…</div>
-                  )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className={item.avgRisk >= 60 ? 'badge-clean badge-red' : item.avgRisk >= 40 ? 'badge-clean badge-amber' : 'badge-clean badge-green'} style={{ fontSize: '13px' }}>
+                            Avg Risk: {item.avgRisk}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* PAGE 2: FULL-SCREEN MAP WITH COLLAPSIBLE FLOATING TRIAGE DRAWER & EMBEDDED FILTERS */}
         {mainViewMode === 'map' && (
@@ -2038,6 +2212,7 @@ export default function App() {
           </div>
         )}
       </main>
+      </div>
 
       {/* State / Role Login Modal */}
       {showAuthModal && (
