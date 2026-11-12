@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import facilityRoutes from './routes/facilityRoutes.js';
 import overviewRoutes from './routes/overviewRoutes.js';
 import simulationRoutes from './routes/simulationRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
 import { initDataLoader, getDataLoaderStatus } from './services/dataLoader.js';
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use('/api/facilities', facilityRoutes);
 app.use('/api/overview', overviewRoutes);
 app.use('/api/simulation', simulationRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({

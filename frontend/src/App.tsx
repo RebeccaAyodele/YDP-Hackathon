@@ -52,6 +52,7 @@ import {
   DatasetAnalyticsResponse 
 } from './types/index.ts';
 import FacilityMap from './components/FacilityMap.tsx';
+import ChatAssistant from './components/ChatAssistant.tsx';
 
 interface AuthUser {
   username: string;
@@ -2276,6 +2277,9 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* REMI AI Epidemiological Data Assistant */}
+      <ChatAssistant />
     </div>
   );
 }
