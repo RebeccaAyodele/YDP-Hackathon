@@ -3,9 +3,10 @@ import { getScoredFacilities } from '../services/riskEngine.js';
 import { getCommodities, getFacilityInventoryMap, getLgaIndicators } from '../services/dataLoader.js';
 
 const CANDIDATE_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-flash-latest',
-  'gemini-3.8-flash'
+  'gemini-3.5-flash',
+  'gemini-3.6-flash',
+  'gemini-3.7-flash',
+  'gemini-flash-latest'
 ];
 
 function buildDataContext(userMessage: string = ''): string {
@@ -239,7 +240,7 @@ ${dataContext}`;
         }
       } catch (err: any) {
         lastError = err.message;
-        console.warn(`[REMI] Call to ${modelName} failed:`, err.message);
+        console.warn(`[REMI] Call to ${modelName} failed:`, err.message, err?.cause || '');
       }
     }
 
