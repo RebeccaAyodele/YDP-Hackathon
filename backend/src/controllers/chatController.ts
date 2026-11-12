@@ -2,7 +2,11 @@ import { Request, Response } from 'express';
 import { getScoredFacilities } from '../services/riskEngine.js';
 import { getCommodities, getFacilityInventoryMap, getLgaIndicators } from '../services/dataLoader.js';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
+const CANDIDATE_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
+  'gemini-3.8-flash'
+];
 
 function buildDataContext(userMessage: string = ''): string {
   const facilities = getScoredFacilities();
@@ -200,34 +204,51 @@ ${dataContext}`;
     }
     contents.push({ role: 'user', parts: [{ text: message }] });
 
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemInstruction }] },
-        contents,
-        generationConfig: {
-          temperature: 0.1, // Near-zero temperature ensures strict factual consistency with zero hallucination
-          maxOutputTokens: 600,
-          topP: 0.8
+    let lastError: string = '';
+    let responseText: string | null = null;
+    let successfulModel: string = '';
+
+    for (const modelName of CANDIDATE_MODELS) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemInstruction }] },
+            contents,
+            generationConfig: {
+              temperature: 0.1, // Near-zero temperature ensures strict factual consistency with zero hallucination
+              maxOutputTokens: 600,
+              topP: 0.8
+            }
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json() as any;
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            responseText = text;
+            successfulModel = modelName;
+            break;
+          }
+        } else {
+          lastError = await response.text();
+          console.warn(`[REMI] Model ${modelName} returned status ${response.status}:`, lastError);
         }
-      })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Gemini API error:', errText);
-      return res.status(502).json({ error: 'AI service error. Please try again.' });
+      } catch (err: any) {
+        lastError = err.message;
+        console.warn(`[REMI] Call to ${modelName} failed:`, err.message);
+      }
     }
 
-    const data = await response.json() as any;
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!text) {
-      return res.status(502).json({ error: 'Empty response from AI service.' });
+    if (!responseText) {
+      console.error('[REMI] All candidate models failed. Last error:', lastError);
+      return res.status(502).json({ error: 'AI service unavailable. Please check your API key or try again in a moment.' });
     }
 
-    res.json({ reply: text, model: 'gemini-3.8-flash' });
+    res.json({ reply: responseText, model: successfulModel });
   } catch (error: any) {
     console.error('Chat error:', error);
     res.status(500).json({ error: 'Failed to process chat message', message: error.message });
