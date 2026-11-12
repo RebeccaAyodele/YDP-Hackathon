@@ -638,21 +638,9 @@ export default function App() {
                 style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                 title="Open all monitored clinics on the live map"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
-                  <div style={{
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '12px',
-                    background: 'var(--blue-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 4px 12px rgba(15, 118, 110, 0.22)'
-                  }}>
-                    <Building2 size={24} color="#FFFFFF" />
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: '1.25' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <Building2 size={18} color="var(--text-muted)" />
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Monitored Facilities
                   </div>
                 </div>
@@ -677,21 +665,9 @@ export default function App() {
                 style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                 title="Inspect critical priority clinics on the live map"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
-                  <div style={{
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '12px',
-                    background: 'var(--blue-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 4px 12px rgba(15, 118, 110, 0.22)'
-                  }}>
-                    <AlertTriangle size={24} color="#FFFFFF" />
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: '1.25' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <AlertTriangle size={18} color="#DC2626" />
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Critical & High Triage
                   </div>
                 </div>
@@ -716,21 +692,9 @@ export default function App() {
                 style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                 title="Filter live map to silent blackout clinics"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
-                  <div style={{
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '12px',
-                    background: 'var(--blue-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 4px 12px rgba(15, 118, 110, 0.22)'
-                  }}>
-                    <Radio size={24} color="#FFFFFF" />
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: '1.25' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <Radio size={18} color="#D97706" />
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Reporting Blackouts
                   </div>
                 </div>
@@ -753,21 +717,9 @@ export default function App() {
                 style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                 title="View infrastructure and cold chain breakdown"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
-                  <div style={{
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '12px',
-                    background: 'var(--blue-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 4px 12px rgba(15, 118, 110, 0.22)'
-                  }}>
-                    <Thermometer size={24} color="#FFFFFF" />
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: '1.25' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <Thermometer size={18} color="var(--teal-primary)" />
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Cold Chain Readiness
                   </div>
                 </div>
