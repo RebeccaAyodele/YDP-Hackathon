@@ -1,13 +1,8 @@
 numpy
 pandas
-pydantic
-networkx
 pyarrow
 python-dotenv
 psycopg2-binary
-sqlalchemy
 ruff
-fastapi
-uvicorn[standard]
 scikit-learn
 scipy

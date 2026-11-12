@@ -41,7 +41,7 @@ class WeeklyCommodityEvent:
     unmet_demand: float
     cold_chain_breach: bool  # True if vaccine spoiled due to power failure
 
-    # Reported Observation (What enters the Information System)
+    # Reported Observation
     report_submitted: bool  # Did the facility submit the weekly report?
     consecutive_reports_missed: int  # How many consecutive weeks has this facility gone silent?
     reported_stock: float | None
@@ -126,7 +126,6 @@ class StockSimulationEngine:
                 return 1.0
             else:
                 # North: May/June to September (Weeks 20 to 39)
-                # Single peak in July-August (centered at Week 31)
                 if 20 <= week <= 39:
                     diff = abs(week - 31)
                     if diff < 10:
@@ -246,7 +245,6 @@ class StockSimulationEngine:
         records: list[WeeklyCommodityEvent] = []
 
         # Track facility-level running state
-        # facility_id: { consecutive_misses: int, current_stock: {commodity_id: float} }
         state_tracker: dict[str, dict] = {}
 
         for facility in self.facilities:
@@ -255,7 +253,6 @@ class StockSimulationEngine:
                 "current_stock": {c.commodity_id: self._initial_stock_level(facility, c) for c in self.commodities},
             }
 
-        # Step through weeks 1 to num_weeks
         for week in range(1, self.num_weeks + 1):
             for facility in self.facilities:
                 f_state = state_tracker[facility.facility_id]

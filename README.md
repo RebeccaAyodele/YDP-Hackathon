@@ -1,13 +1,5 @@
 # 🏥 Repulse
-### *Predictive Facility Risk Triage, Cascading Disruption Simulation & Early-Warning Platform for Nigeria's Primary Healthcare System*
-
-[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18.3-61dafb.svg)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-6.1-646cff.svg)](https://vitejs.dev/)
-[![Express](https://img.shields.io/badge/Express-4.21-lightgrey.svg)](https://expressjs.com/)
-[![Supabase](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-3ECF8E.svg)](https://supabase.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+### *Predictive Facility Risk Triage, Disruption Simulation & Early-Warning Platform for Nigeria's Primary Healthcare System*
 
 ---
 
@@ -29,7 +21,6 @@
 - [Key Dashboard Capabilities](#-key-dashboard-capabilities)
 - [Analytical Validation & Findings (Simulated)](#-analytical-validation--findings-simulated)
 - [Documentation Index](#-documentation-index)
-- [Team & Acknowledgements](#-team--acknowledgements)
 - [License](#-license)
 
 ---
@@ -37,6 +28,12 @@
 ## 📌 Overview
 
 **Repulse** is an early-warning platform for Nigeria's Primary Healthcare Centres (PHCs). It predicts facility-level stockouts, staffing collapses and patient overflow *before* they become crises, and it treats a facility that stops reporting as a warning sign rather than missing data.
+
+# Demo Video
+https://youtu.be/FA4qRQwToYo
+
+# ONE PAGE DOCUMENT 
+https://docs.google.com/document/d/1a-uBrx3lPeRrS-VwadepzVoKbJ6Slv6_Evt9jc6b_NI/edit?usp=sharing
 
 ### The problem
 
@@ -64,7 +61,7 @@ When a PHC fails, patients move elsewhere. Roughly 60-90% of patients in Nigeria
 
 ### A note on data
 
-Facility locations come from the real [GRID3 Nigeria](https://nigeria.grid3.org/) registry, and area-level indicators are taken from the official NBS 2022 MPI report and the NDHS 2023-24. Weekly stock levels and reporting behaviour are **simulated** from public-health priors, because facility-level stock data is not openly available. The figures in the *Analytical Validation* section therefore describe the simulation's behaviour, not measured real-world outcomes. See [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) for every assumption.
+Facility locations come from the real Nigerian facilities registry, and area-level indicators are taken from the official NBS 2022 MPI report. Weekly stock levels and reporting behaviour are **simulated** from public-health priors, because facility-level stock data is not openly available. The figures in the *Analytical Validation* section therefore describe the simulation's behaviour, not measured real-world outcomes. See [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) for every assumption.
 
 ---
 
@@ -107,13 +104,13 @@ Repulse is structured into four decoupled, production-grade layers:
 
 ---
 
-## 🔬 Data Sources & Public Health Calibration
+## Data Sources & Public Health Calibration
 
 Repulse grounds its simulation in real Nigerian facility registries and national surveys wherever they exist (see detailed breakdown in [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md)). Facility-level stock and reporting behaviour is simulated on top of them.
 
 | Dataset / Source | Origin & Authority | Application in Repulse |
 | :--- | :--- | :--- |
-| **Master Health Facility Registry** | [GRID3 Nigeria GeoPortal](https://nigeria.grid3.org/) | 1,292 public health facilities with GPS coordinates, wards, and National Health Facility Registry (NHFR) codes across 24 LGAs. |
+| **Master Health Facility Registry** | [GRID3 Nigeria GeoPortal](https://github.com/RebeccaAyodele/YDP-Hackathon/blob/main/data_layer/GRID3_NGA_health_facilities_v2_0_5806009649412052847.csv)| 1,292 public health facilities with GPS coordinates, wards, and National Health Facility Registry (NHFR) codes across 24 LGAs. |
 | **Multidimensional Poverty Index (MPI 2022)** | National Bureau of Statistics (NBS), [official report (PDF)](data_layer/data_docs/NIGERIA%20MULTIDIMENSIONAL%20POVERTY%20INDEX%20SURVEY%20RESULTS%202022%20(1).pdf) | Official Alkire-Foster MPI scores ($H \times A$) for the national level (Appendix D1), geopolitical zones (D5), states (D6) and senatorial districts (D7). Among the focal states, MPI ranges from 0.101 in Lagos to 0.409 in Sokoto. |
 | **Demographic and Health Survey (NDHS 2023–24)** | National Population Commission (NPC), [Key Indicators Report (PDF)](https://dhsprogram.com/pubs/pdf/PR157/PR157.pdf) | State-level Full Immunization Coverage (FIC %), Antenatal Care (ANC 4+ visits), and Under-5 Mortality per 1,000 live births. |
 | **Minimum Standards for PHC** | NPHCDA / FMOH | Facility tier normalization: Comprehensive Health Centre (CHC), Primary Health Centre (PHC), Primary Health Clinic, and Health Post. |
@@ -122,18 +119,7 @@ Repulse grounds its simulation in real Nigerian facility registries and national
 
 ### Focal Cohort: 6 States Across All 6 Geopolitical Zones
 
-Values below are taken directly from the NBS 2022 MPI report, Appendix D6 (MPI = Incidence $H$ × Intensity $A$). The national figures are MPI 0.257, $H$ 62.9%, $A$ 40.9%.
-
-| Zone | State | MPI | Incidence $H$ | Intensity $A$ | Context |
-| :--- | :--- | :---: | :---: | :---: | :--- |
-| South West | **Lagos** | `0.101` | 29.4% | 34.3% | Urban commercial benchmark |
-| South South | **Bayelsa** | `0.401` | 88.5% | 45.3% | Riverine Niger Delta terrain |
-| North Central | **Plateau** | `0.365` | 84.0% | 43.5% | Central highland terrain |
-| South East | **Ebonyi** | `0.320` | 78.0% | 41.1% | Agrarian rurality, endemic cholera risks |
-| North West | **Sokoto** | `0.409` | 90.5% | 45.2% | Border Sahelian rurality, lowest immunization baselines |
-| North East | **Yobe** | `0.370` | 83.5% | 44.3% | Conflict recovery infrastructure |
-
-The report notes that Sokoto, Bayelsa, Jigawa, Kebbi, Gombe and Yobe are the poorest states but that their confidence intervals overlap, so their exact ranking is uncertain.
+The  MPI report notes that Sokoto, Bayelsa, Jigawa, Kebbi, Gombe and Yobe are the poorest states but that their confidence intervals overlap, so their exact ranking is uncertain.
 
 **LGA baselines.** The report does not publish LGA-level MPI. Each of the 24 focal LGAs therefore takes the official MPI of its senatorial district (Appendix D7), so LGAs in the same district share a value.
 
@@ -160,8 +146,7 @@ The system tracks 8 vital medicines and vaccines under Nigeria's Integrated Mana
 - **Language**: Python 3.10+
 - **Data Engineering**: `pandas`, `numpy`, `pyarrow` (columnar Parquet storage)
 - **Machine Learning**: `scikit-learn` (`GradientBoostingRegressor`), `scipy`
-- **Network Graphing**: `networkx` (Spherical Haversine distance computations)
-- **Database Loaders**: `psycopg2-binary`, `sqlalchemy` (PostgreSQL / Supabase batching)
+- **Database Loaders**: `psycopg2-binary` (Supabase batching)
 - **Code Quality**: `ruff`
 - **Detailed Documentation**: [`data_layer/data_docs/`](data_layer/data_docs)
 
@@ -268,7 +253,7 @@ pip install -r data_layer/requirements.txt
 python data_layer/run_pipeline.py
 
 # Optional Flags:
-# python data_layer/run_pipeline.py --force     # Recompute all 537k records from scratch
+# python data_layer/run_pipeline.py --force     # Recompute all 500k+ records from scratch
 # python data_layer/run_pipeline.py --skip-db   # Skip Supabase cloud database loading
 ```
 
@@ -321,14 +306,22 @@ npm run dev
 - **Federal Ministry of Health (National Admin)**: High-altitude macro view across all 6 geopolitical zones, state risk comparisons, national stockout rates, and aggregated silence statistics.
 - **State Primary Health Care Agency Admins**: Immediate drill-down into local state facilities (e.g., Lagos, Sokoto, Yobe, Bayelsa, Plateau, Ebonyi) with localized LGA rankings and urgent action items.
 
+<img width="1920" height="943" alt="image" src="https://github.com/user-attachments/assets/7641d39c-472b-4412-bd64-59e0984d17ea" />
+
+
 ### 2. Interactive GIS Risk Map
 - **Color-Coded Risk Triage**: Real-time visualization of facilities categorized into `LOW`, `MEDIUM`, `HIGH`, and `CRITICAL` risk tiers.
 - **Compounding Silence Pulse Rings**: Distinct animated radar pulses highlight facilities suffering from reporting blackouts ($\ge 3$ consecutive weeks).
 - **Proximity Network Overlay**: Visualizes spatial edges connecting neighboring health centres to reveal potential overflow vectors.
+- 
+<img width="890" height="647" alt="image" src="https://github.com/user-attachments/assets/0fe16e0e-9ae4-4b29-94c4-4e67432da37b" />
 
 ### 3. Detailed Facility Dossier & Explainability
 - **Clinical Risk Factor Breakdown**: Clear, human-readable explanations behind every risk score (e.g., *"4-week reporting silence (+25 pts), no functional cold chain (+15 pts), severe ACT stockout in neighboring facility (+10 pts)"*).
 - **Weekly Inventory Inspection**: Status for all 8 monitored commodities, days of stock remaining, unmet demand, and cold-chain temperature breach alerts.
+
+<img width="1920" height="874" alt="image" src="https://github.com/user-attachments/assets/41063880-05bb-4ae9-b13e-3b61e2c4c8c4" />
+
 
 ### 4. Interactive "What-If" Cascading Shock Simulator
 - Health planners can select any health facility, dial in an artificial shock magnitude (e.g., $+35\%$ sudden disease surge or logistics cutoff), and trigger a multi-hop simulation.
@@ -353,22 +346,21 @@ These checks run during pipeline execution on the **simulated** facility data. T
 | **Data & Assumptions Guide** | [`data_layer/data_docs/DATA_AND_ASSUMPTIONS.md`](data_layer/data_docs/DATA_AND_ASSUMPTIONS.md) | Public health evidence base, NBS 2022 MPI values, seasonal profiles, and Markov decay formulas. |
 | **Data Architecture & Pipeline** | [`data_layer/data_docs/DATA_ARCHITECTURE.md`](data_layer/data_docs/DATA_ARCHITECTURE.md) | Technical blueprint of datasets, Parquet columnar schemas, and Supabase database ingestion routines. |
 | **Official NBS 2022 MPI Survey** | [`data_layer/data_docs/NIGERIA MULTIDIMENSIONAL POVERTY INDEX SURVEY RESULTS 2022 (1).pdf`](data_layer/data_docs/NIGERIA%20MULTIDIMENSIONAL%20POVERTY%20INDEX%20SURVEY%20RESULTS%202022%20(1).pdf) | Official survey publication from the National Bureau of Statistics (NBS). |
-| **Implementation Guide** | [`.docs/PHC_Pulse_Implementation_Guide.pdf`](.docs/PHC_Pulse_Implementation_Guide.pdf) | Original architectural and hackathon implementation blueprint. |
-
 ---
 
-## 👥 Team & Acknowledgements
+## Future Improvement
+- Implement a function to allow doctors upload weekly reports
+- Improve frontend for faster data rendering
+- Implement a home page and better authentication
+- Improve Better assumption on the data points
+- 
+## 👥 Team
 
-### Project Team
+### Project Team (Data Divas)
 * **Ayodele Rebecca** — Software Engineer
 * **Ogechukwu Okoli** — Data Engineer
 
-### Acknowledgements & Data Partners
-Special thanks to:
-* **GRID3 Nigeria** for open-access health facility geographic data.
-* **National Bureau of Statistics (NBS)** for the 2022 Multidimensional Poverty Index dataset.
-* **National Population Commission (NPC)** for the Nigeria Demographic and Health Survey.
-* **National Primary Health Care Development Agency (NPHCDA)** for primary healthcare delivery benchmarks.
+#### Submission for the YDP Datathon 1.0
 
 ---
 

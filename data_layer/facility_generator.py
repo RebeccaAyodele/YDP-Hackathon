@@ -353,13 +353,11 @@ class FacilityGenerator:
         return facilities
 
     def generate_all_facilities(self):
-        """Loads real facilities from GRID3 CSV if available."""
         if self.grid3_csv_path and self.grid3_csv_path.exists():
             return self.load_from_grid3_csv()
         raise FileNotFoundError("GRID3 CSV file not found!")
 
     def export_to_json(self, output_path: Path):
-        """Generates and writes facilities to JSON."""
         facilities = self.generate_all_facilities()
         output_path.parent.mkdir(parents=True, exist_ok=True)
         data = [asdict(f) for f in facilities]
