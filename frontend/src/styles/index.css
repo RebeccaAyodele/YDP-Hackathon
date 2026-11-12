@@ -19,14 +19,14 @@
   --teal-border: #99F6E4;
 
   /* --- SURFACES: Warm Cream Foundation & Crisp White Cards --- */
-  --bg-app: #F5F5F3;                 /* Website foundation (Warm Cream / Stone) */
+  --bg-app: #ECE8E1;                 /* Website foundation (Rich Warm Sand / Linen) */
   --bg-surface: #FFFFFF;             /* Crisp White Card & Panel background */
-  --bg-hover: #EFEFEA;               /* Hover highlight */
+  --bg-hover: #E3DFD7;               /* Hover highlight */
   --bg-subtle: #FAF9F6;              /* Subtle cream tint */
 
   /* Clean Borders & Dividers */
-  --border-light: #E7E6E1;           /* Card border */
-  --border-medium: #D8D6CE;          /* Input & focus border */
+  --border-light: #E0DCD4;           /* Card border */
+  --border-medium: #D0CCC2;          /* Input & focus border */
 
   /* High-Contrast Neutral Text */
   --text-primary: #1C2424;           /* Headings & key titles */

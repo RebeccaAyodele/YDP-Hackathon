@@ -626,6 +626,7 @@ export default function App() {
               gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '16px'
             }}>
+              {/* Card 1: Monitored Facilities */}
               <div
                 className="panel kpi-card"
                 onClick={() => {
@@ -634,26 +635,37 @@ export default function App() {
                   setTriageOpen(true);
                   navigateToView('map');
                 }}
-                style={{ padding: '22px 24px', cursor: 'pointer' }}
+                style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                 title="Open all monitored clinics on the live map"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
+                  <div style={{
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '12px',
+                    background: 'var(--blue-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 12px rgba(15, 118, 110, 0.22)'
+                  }}>
+                    <Building2 size={24} color="#FFFFFF" />
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: '1.25' }}>
                     Monitored Facilities
                   </div>
-                  <Building2 size={18} color="var(--blue-primary)" />
                 </div>
-                <div style={{ fontSize: '34px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '8px' }}>
+
+                <div style={{ fontSize: '34px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: '1.1' }}>
                   {loading ? <span className="loading-value" role="status">Loading…</span> : (stats?.total_facilities ?? facilities.length)}
                 </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.35' }}>
                   {currentUser.role === 'STATE' ? `${currentUser.state} State Scope` : (selectedState ? `${selectedState} State Scope` : '24 Priority LGAs across Nigeria')}
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--blue-primary)', marginTop: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  View all on map <ArrowUpRight size={14} />
                 </div>
               </div>
 
+              {/* Card 2: Critical & High Triage */}
               <div
                 className="panel kpi-card"
                 onClick={() => {
@@ -662,26 +674,37 @@ export default function App() {
                   setTriageOpen(true);
                   navigateToView('map');
                 }}
-                style={{ padding: '22px 24px', cursor: 'pointer' }}
+                style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                 title="Inspect critical priority clinics on the live map"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
+                  <div style={{
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '12px',
+                    background: 'var(--blue-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 12px rgba(15, 118, 110, 0.22)'
+                  }}>
+                    <AlertTriangle size={24} color="#FFFFFF" />
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: '1.25' }}>
                     Critical & High Triage
                   </div>
-                  <AlertTriangle size={18} color="#DC2626" />
                 </div>
-                <div style={{ fontSize: '34px', fontWeight: 700, color: '#DC2626', marginTop: '8px' }}>
+
+                <div style={{ fontSize: '34px', fontWeight: 700, color: '#DC2626', lineHeight: '1.1' }}>
                   {loading ? <span className="loading-value" role="status">Loading…</span> : (stats ? stats.critical_risk_count + stats.high_risk_count : '—')}
                 </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.35' }}>
                   {loading ? 'Loading risk counts…' : `${stats?.critical_risk_count ?? 0} Critical Priority • ${stats?.high_risk_count ?? 0} High Risk`}
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#DC2626', marginTop: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  Filter critical queue <ArrowUpRight size={14} />
                 </div>
               </div>
 
+              {/* Card 3: Reporting Blackouts */}
               <div
                 className="panel kpi-card"
                 onClick={() => {
@@ -690,49 +713,70 @@ export default function App() {
                   setTriageOpen(true);
                   navigateToView('map');
                 }}
-                style={{ padding: '22px 24px', cursor: 'pointer' }}
+                style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                 title="Filter live map to silent blackout clinics"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
+                  <div style={{
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '12px',
+                    background: 'var(--blue-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 12px rgba(15, 118, 110, 0.22)'
+                  }}>
+                    <Radio size={24} color="#FFFFFF" />
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: '1.25' }}>
                     Reporting Blackouts
                   </div>
-                  <Radio size={18} color="#D97706" />
                 </div>
-                <div style={{ fontSize: '34px', fontWeight: 700, color: '#D97706', marginTop: '8px' }}>
+
+                <div style={{ fontSize: '34px', fontWeight: 700, color: '#D97706', lineHeight: '1.1' }}>
                   {loading ? <span className="loading-value" role="status">Loading…</span> : (stats?.silent_facilities_count ?? facilities.filter(f => f.is_silent).length)}
                 </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.35' }}>
                   Clinics with ≥3 consecutive missed reports
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#D97706', marginTop: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  Inspect silent clinics <ArrowUpRight size={14} />
                 </div>
               </div>
 
+              {/* Card 4: Cold Chain Readiness */}
               <div
                 className="panel kpi-card"
                 onClick={() => {
                   setAnalyticsSubTab('facilities');
                   navigateToView('analytics');
                 }}
-                style={{ padding: '22px 24px', cursor: 'pointer' }}
+                style={{ padding: '22px 24px', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                 title="View infrastructure and cold chain breakdown"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '14px' }}>
+                  <div style={{
+                    width: '46px',
+                    height: '46px',
+                    borderRadius: '12px',
+                    background: 'var(--blue-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 12px rgba(15, 118, 110, 0.22)'
+                  }}>
+                    <Thermometer size={24} color="#FFFFFF" />
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: '1.25' }}>
                     Cold Chain Readiness
                   </div>
-                  <Thermometer size={18} color="var(--teal-primary)" />
                 </div>
-                <div style={{ fontSize: '34px', fontWeight: 700, color: 'var(--teal-primary)', marginTop: '8px' }}>
+
+                <div style={{ fontSize: '34px', fontWeight: 700, color: 'var(--teal-primary)', lineHeight: '1.1' }}>
                   {loading ? <span className="loading-value" role="status">Loading…</span> : <>{coldChainPct}%<span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-muted)', marginLeft: '8px' }}>({coldChainReadyCount} clinics)</span></>}
                 </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: '1.35' }}>
                   Solar direct-drive vaccine preservation
-                </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--teal-primary)', marginTop: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  View readiness charts <ArrowUpRight size={14} />
                 </div>
               </div>
             </section>
