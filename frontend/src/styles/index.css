@@ -1,33 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
+/* ==========================================================================
+   MASTER DESIGN TOKENS & COLOR CONTROL PANEL
+   Easily customize colors across the entire application right here!
+   ========================================================================== */
 :root {
-  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-main: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 
-  /* Pure Electric Blue & Monochromatic Clean White */
-  --blue-primary: #0052FF;
-  --blue-hover: #0045D8;
-  --blue-subtle: #F0F5FF;
-  --blue-border: #D0E1FD;
+  /* --- BRAND IDENTITY: Deep Viridian Blue-Green (Spruce) --- */
+  --blue-primary: #0F766E;          /* Main primary action & brand */
+  --blue-hover: #115E59;            /* Button hover & dark accent */
+  --blue-subtle: #F0FDFA;           /* Soft wash */
+  --blue-border: #99F6E4;           /* Delicate mint border */
+  --teal-primary: #0F766E;
+  --teal-hover: #115E59;
+  --teal-subtle: #F0FDFA;
+  --teal-border: #99F6E4;
 
-  /* Neutral Surfaces */
-  --bg-app: #F8FAFC;
-  --bg-surface: #FFFFFF;
-  --bg-hover: #F1F5F9;
-  --bg-subtle: #F8FAFC;
+  /* --- SURFACES: Warm Cream Foundation & Crisp White Cards --- */
+  --bg-app: #F5F5F3;                 /* Website foundation (Warm Cream / Stone) */
+  --bg-surface: #FFFFFF;             /* Crisp White Card & Panel background */
+  --bg-hover: #EFEFEA;               /* Hover highlight */
+  --bg-subtle: #FAF9F6;              /* Subtle cream tint */
 
-  /* Clean Borders */
-  --border-light: #E2E8F0;
-  --border-medium: #CBD5E1;
+  /* Clean Borders & Dividers */
+  --border-light: #E7E6E1;           /* Card border */
+  --border-medium: #D8D6CE;          /* Input & focus border */
 
-  /* Clean High-Contrast Neutral Text */
-  --text-primary: #0F172A;
-  --text-body: #334155;
-  --text-muted: #64748B;
-  --text-subtle: #94A3B8;
+  /* High-Contrast Neutral Text */
+  --text-primary: #1C2424;           /* Headings & key titles */
+  --text-body: #374151;              /* Body descriptions */
+  --text-muted: #6B7280;             /* Secondary metadata */
+  --text-subtle: #9CA3AF;            /* Tertiary labels */
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  /* Ambient Soft Shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(28, 36, 36, 0.05), 0 1px 2px -1px rgba(28, 36, 36, 0.03);
+  --shadow-md: 0 4px 10px -2px rgba(28, 36, 36, 0.06), 0 2px 4px -2px rgba(28, 36, 36, 0.03);
 }
 
 * {
@@ -41,24 +50,26 @@ body {
   background-color: var(--bg-app);
   color: var(--text-primary);
   min-height: 100vh;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom Minimalist Scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #E2E8F0;
+  background: var(--border-medium);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #CBD5E1;
+  background: var(--text-subtle);
 }
 
 .app-container {
@@ -72,20 +83,20 @@ body {
 .panel {
   background: var(--bg-surface);
   border: 1px solid var(--border-light);
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: var(--shadow-sm);
 }
 
 .panel-row {
   background: var(--bg-surface);
   border: 1px solid var(--border-light);
-  border-radius: 8px;
-  transition: all 0.12s ease;
+  border-radius: 10px;
+  transition: all 0.15s ease;
 }
 
 .panel-row:hover {
-  border-color: var(--border-medium);
-  background: #FAFAFA;
+  border-color: var(--blue-border);
+  background: var(--bg-subtle);
 }
 
 .panel-row-selected {
@@ -98,11 +109,11 @@ body {
 .badge-clean {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
   font-weight: 700;
-  background: #F1F5F9;
+  background: var(--bg-subtle);
   color: var(--text-body);
   border: 1px solid var(--border-light);
 }
@@ -114,9 +125,9 @@ body {
 }
 
 .badge-green {
-  background: #F0FDF4;
-  color: #16A34A;
-  border: 1px solid #BBF7D0;
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
 }
 
 .badge-red {
@@ -132,20 +143,24 @@ body {
 }
 
 .badge-dark {
-  background: #0F172A;
+  background: #1C2424;
   color: #FFFFFF;
-  border: 1px solid #0F172A;
+  border: 1px solid #1C2424;
 }
 
 /* Tabs */
 .tab-btn {
-  padding: 8px 14px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
+  white-space: nowrap;
   cursor: pointer;
   transition: all 0.12s ease;
 }
@@ -163,10 +178,10 @@ body {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
-  border-radius: 7px;
-  font-size: 13px;
+  gap: 7px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
@@ -202,9 +217,9 @@ body {
 .input-clean {
   background: #FFFFFF;
   border: 1px solid var(--border-light);
-  border-radius: 7px;
-  padding: 8px 12px;
-  font-size: 13px;
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 14px;
   color: var(--text-primary);
   outline: none;
   transition: border-color 0.12s ease;
@@ -257,26 +272,41 @@ body {
   min-width: 0;
 }
 
+.kpi-card {
+  transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--blue-border);
+  box-shadow: var(--shadow-md);
+}
+
+.triage-drawer {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  bottom: 16px;
+  width: 415px;
+  max-width: calc(100% - 32px);
+  z-index: 450;
+  background: rgba(245, 245, 243, 0.96);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-medium);
+  border-radius: 14px;
+  box-shadow: 0 14px 36px rgba(28, 36, 36, 0.16);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
 @media (max-width: 1200px) {
   .kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
-  .workspace-grid {
-    grid-template-columns: minmax(250px, 0.8fr) minmax(0, 1.2fr) !important;
-    height: auto !important;
-    min-height: 0 !important;
-  }
-
-  .triage-panel,
   .facility-map-wrap {
-    min-height: 560px;
-  }
-
-  .facility-dossier {
-    grid-column: 1 / -1;
-    height: auto !important;
-    max-height: 680px;
+    min-height: 600px;
   }
 
   .analytics-view [style*="grid-template-columns"] {
@@ -298,8 +328,8 @@ body {
   }
 
   .header-brand > div:last-child > div:last-child {
-    max-width: 260px;
-    font-size: 11px !important;
+    max-width: 280px;
+    font-size: 12px !important;
   }
 
   .header-actions {
@@ -314,8 +344,8 @@ body {
   .header-view-switcher .btn {
     flex: 1 1 0;
     justify-content: center;
-    padding: 7px 8px !important;
-    font-size: 11px !important;
+    padding: 8px 10px !important;
+    font-size: 12.5px !important;
   }
 
   .header-actions > .btn {
@@ -333,13 +363,13 @@ body {
   }
 
   .kpi-grid > .panel {
-    padding: 12px !important;
+    padding: 14px !important;
     min-width: 0;
   }
 
   .filter-bar {
     flex-wrap: wrap;
-    padding: 10px !important;
+    padding: 12px !important;
   }
 
   .filter-bar > div:first-child {
@@ -352,25 +382,16 @@ body {
     min-width: 0;
   }
 
-  .workspace-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 10px !important;
-  }
-
-  .triage-panel {
-    min-height: 0;
-    height: 390px !important;
-  }
-
   .facility-map-wrap {
-    height: min(65vh, 520px) !important;
-    min-height: 360px;
+    height: 75vh !important;
+    min-height: 520px !important;
   }
 
-  .facility-dossier {
-    grid-column: auto;
-    max-height: none;
-    padding: 14px !important;
+  .triage-drawer {
+    width: calc(100% - 24px);
+    top: 12px;
+    left: 12px;
+    bottom: 12px;
   }
 
   .analytics-nav {
