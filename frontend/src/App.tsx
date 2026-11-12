@@ -494,49 +494,100 @@ export default function App() {
         {/* PAGE 1: EXECUTIVE OVERVIEW FRONT PAGE (OPTION A) */}
         {mainViewMode === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Situation Briefing Banner */}
-            <section className="panel" style={{ padding: '24px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '18px' }}>
+            {/* Situation Briefing Banner (Primary Viridian Card with White CTA) */}
+            <section
+              style={{
+                padding: '28px 32px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '20px',
+                background: 'linear-gradient(135deg, #0F766E 0%, #0D5C56 100%)',
+                borderRadius: '16px',
+                border: '1px solid #115E59',
+                boxShadow: '0 12px 32px rgba(15, 118, 110, 0.22)',
+                color: '#FFFFFF'
+              }}
+            >
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <span className="badge-clean badge-blue">Live Network Briefing</span>
-                  <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                  <span
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.18)',
+                      border: '1px solid rgba(255, 255, 255, 0.32)',
+                      color: '#FFFFFF',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      padding: '3px 10px',
+                      borderRadius: '6px',
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase'
+                    }}
+                  >
+                    Live Network Briefing
+                  </span>
+                  <span style={{ fontSize: '14px', color: '#CCFBF1', fontWeight: 600 }}>
                     {currentUser.displayName}
                   </span>
                 </div>
-                <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: '1.2' }}>
+                <h1 style={{ fontSize: '27px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: '1.2' }}>
                   Primary Healthcare Vulnerability Overview
                 </h1>
-                <p style={{ fontSize: '15px', color: 'var(--text-muted)', marginTop: '6px', maxWidth: '720px' }}>
+                <p style={{ fontSize: '15px', color: '#E6FFFA', marginTop: '8px', maxWidth: '740px', lineHeight: '1.55' }}>
                   First-hand operational summary of facility risk posture, reporting blackouts, cold chain readiness, and essential commodity shortages. Select any metric or launch the full-screen map to inspect individual clinics.
                 </p>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 {currentUser.role === 'NATIONAL' && (
                   <select
                     value={selectedState}
                     onChange={e => { setSelectedState(e.target.value); setCurrentPage(1); }}
-                    className="input-clean"
-                    style={{ height: '44px', fontSize: '14px', cursor: 'pointer' }}
+                    style={{
+                      height: '46px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      background: 'rgba(255, 255, 255, 0.14)',
+                      color: '#FFFFFF',
+                      border: '1px solid rgba(255, 255, 255, 0.35)',
+                      borderRadius: '8px',
+                      padding: '0 14px',
+                      outline: 'none'
+                    }}
                     aria-label="Scope by state"
                   >
-                    <option value="">All States (6 Zones)</option>
-                    <option value="Sokoto">Sokoto State</option>
-                    <option value="Yobe">Yobe State</option>
-                    <option value="Ebonyi">Ebonyi State</option>
-                    <option value="Plateau">Plateau State</option>
-                    <option value="Bayelsa">Bayelsa State</option>
-                    <option value="Lagos">Lagos State</option>
+                    <option value="" style={{ color: '#1C2424', background: '#FFFFFF' }}>All States (6 Zones)</option>
+                    <option value="Sokoto" style={{ color: '#1C2424', background: '#FFFFFF' }}>Sokoto State</option>
+                    <option value="Yobe" style={{ color: '#1C2424', background: '#FFFFFF' }}>Yobe State</option>
+                    <option value="Ebonyi" style={{ color: '#1C2424', background: '#FFFFFF' }}>Ebonyi State</option>
+                    <option value="Plateau" style={{ color: '#1C2424', background: '#FFFFFF' }}>Plateau State</option>
+                    <option value="Bayelsa" style={{ color: '#1C2424', background: '#FFFFFF' }}>Bayelsa State</option>
+                    <option value="Lagos" style={{ color: '#1C2424', background: '#FFFFFF' }}>Lagos State</option>
                   </select>
                 )}
 
                 <button
                   type="button"
                   onClick={() => navigateToView('analytics')}
-                  className="btn btn-outline"
-                  style={{ height: '44px', padding: '0 18px', fontSize: '14px' }}
+                  style={{
+                    height: '46px',
+                    padding: '0 20px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    background: 'rgba(255, 255, 255, 0.14)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.35)',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.14s ease'
+                  }}
                 >
-                  <BarChart3 size={16} />
+                  <BarChart3 size={17} color="#FFFFFF" />
                   Visual Analytics
                 </button>
 
@@ -546,10 +597,24 @@ export default function App() {
                     setTriageOpen(true);
                     navigateToView('map');
                   }}
-                  className="btn btn-primary"
-                  style={{ height: '44px', padding: '0 22px', fontSize: '14.5px' }}
+                  style={{
+                    height: '46px',
+                    padding: '0 24px',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    background: '#FFFFFF',
+                    color: '#0F766E',
+                    border: '1px solid #FFFFFF',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '9px',
+                    boxShadow: '0 6px 18px rgba(0, 0, 0, 0.14)',
+                    transition: 'all 0.14s ease'
+                  }}
                 >
-                  <MapIcon size={17} />
+                  <MapIcon size={18} color="#0F766E" />
                   Launch Full-Screen Map &rarr;
                 </button>
               </div>
